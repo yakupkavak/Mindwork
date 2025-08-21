@@ -33,7 +33,10 @@ struct CatchPairUI: View {
 
             tvBodylineString(text: String(format: "%.2f", viewModel.timeCounter), color: .black).padding(.top)
             tvBodyline(text: viewModel.preparingGame ? StringKey.showing_numbers : QuestionStringKeys.think_question, color: .gray)
-
+            if let isTrue = viewModel.isTrue {
+                tvBodyline(text: isTrue ? StringKey.true_answer : StringKey.wrong_answer, color: isTrue ? .green : .red)
+            }
+            
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.orange)
                 .overlay {

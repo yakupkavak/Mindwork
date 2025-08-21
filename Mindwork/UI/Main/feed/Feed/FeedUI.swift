@@ -21,8 +21,7 @@ struct FeedUI: View {
                     HStack(spacing: 16){
                         ForEach(viewModel.questionList){ question in
                             Button {
-                                selectedQuestionType = question.questionType
-                                navigateGame(type: selectedQuestionType)
+                                navigateGame(type: question.questionType)
                             } label: {
                                 FeedRowUI(foregroundColor: question.foregroundColor, backgroundColor: question.backgroundColor, title: Text(question.title)).frame(width: Width.screenFourtyTwoWidth)
                             }
@@ -36,8 +35,7 @@ struct FeedUI: View {
                     HStack(spacing: 16){
                         ForEach(viewModel.gameList){ game in
                             Button {
-                                selectedQuestionType = game.questionType
-                                navigateGame(type: selectedQuestionType)
+                                navigateGame(type: game.questionType)
                             } label: {
                                 FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
                             }
@@ -51,15 +49,14 @@ struct FeedUI: View {
                     HStack(spacing: 16){
                         ForEach(viewModel.gameList){ game in
                             Button {
-                                selectedQuestionType = game.questionType
-                                navigateGame(type: selectedQuestionType)
+                                navigateGame(type: game.questionType)
                             } label: {
                                 FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
-                }
+                }.padding(.bottom,140)
                 
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.leading,16).padding(.top)
@@ -95,6 +92,7 @@ struct FeedUI: View {
                 })*/
         }.ignoresSafeArea().background(Color.feedBackground)
     }
+    
     private func navigateGame(type: QuestionType?) {
         switch type {
         case .was_it_there:

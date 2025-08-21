@@ -46,7 +46,7 @@ final class CatchPairViewModel: BaseViewModel {
     @Published var averageResponseTime: Double = 0.0
     @Published var percentageTruth: Double = 0.0
     @Published var preparingGame = true
-
+    @Published var isTrue: Bool? = nil
     private var totalResponseTime: Double = 0.0
     private var totalAnswered: Int = 0
 
@@ -82,7 +82,7 @@ final class CatchPairViewModel: BaseViewModel {
         questionProgress = Double(questionNumber) / Double(lastQuestionNumber)
         isAnswerTrue = false
         gameOver = false
-
+        isTrue = nil
         correctCount = 0
         wrongCount = 0
         averageResponseTime = 0.0
@@ -138,9 +138,11 @@ final class CatchPairViewModel: BaseViewModel {
     
     private func correctAnswer(){
         correctCount += 1
+        isTrue = true
     }
     private func wrongAnswer(){
         wrongCount += 1
+        isTrue = false
     }
 
     // MARK: - Faz Yönetimi
@@ -169,7 +171,7 @@ final class CatchPairViewModel: BaseViewModel {
     private func endGame() {
         stopGameTimer()
         phase = .finished
-
+        isTrue = nil
         let total = correctCount + wrongCount
         percentageTruth = total > 0 ? (100.0 * Double(correctCount) / Double(total)) : 0.0
         averageResponseTime = timeCounter / 10.0

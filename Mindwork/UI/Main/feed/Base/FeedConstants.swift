@@ -11,6 +11,7 @@ import SwiftUICore
 let loveModels: [LocalQuestion] = [
     
 ]
+
 let gamesTitles: [QuestionLocalModel] = [
     QuestionLocalModel(
         questionType: .firefly_title,
