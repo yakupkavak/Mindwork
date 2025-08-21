@@ -223,6 +223,26 @@ Invite your partner and begin crafting memories together 💫";
 "text_pink"       = "Pink";
 "text_brown"      = "Brown";
 "text_turquoise"  = "Turquoise";
+"showing_numbers" = "Starting numbers";
+"start_remember" = "Start to memorize!";
+"loading" = "Loading...";
+
+//Numbers
+"number_zero"  = "Zero";
+"number_one"   = "One";
+"number_two"   = "Two";
+"number_three" = "Three";
+"number_four"  = "Four";
+"number_five"  = "Five";
+"number_six"   = "Six";
+"number_seven" = "Seven";
+"number_eight" = "Eight";
+"number_nine"  = "Nine";
+
+"one_before" = "What was the previous number";
+"two_before" = "What was the number two steps before";
+"three_before" = "Remember the number three steps before";
+"four_before" = "What was the number four steps before";
 
 "statistics_title" = "Statistics";
 "true_count %lld" = "Correct: %lld";

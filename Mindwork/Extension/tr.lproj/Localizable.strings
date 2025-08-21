@@ -227,6 +227,26 @@ Partnerini davet et, birlikte anılarla dolu bir yolculuğa çıkın ☘️";
 "text_pink"       = "Pembe";
 "text_brown"      = "Kahverengi";
 "text_turquoise"  = "Turkuaz";
+"showing_numbers" = "Başlangıç numaraları";
+"start_remember" = "Ezberlemeye başla!";
+"loading" = "Yükleniyor...";
+
+//Numbers
+"number_zero"  = "Sıfır";
+"number_one"   = "Bir";
+"number_two"   = "İki";
+"number_three" = "Üç";
+"number_four"  = "Dört";
+"number_five"  = "Beş";
+"number_six"   = "Altı";
+"number_seven" = "Yedi";
+"number_eight" = "Sekiz";
+"number_nine"  = "Dokuz";
+
+"one_before" = "Bir önceki sayı neydi";
+"two_before" = "İki önceki sayı neydi";
+"three_before" = "Üç önceki sayıyı hatırla";
+"four_before" = "Dört önceki sayı neydi";
 
 "statistics_title" = "İstatistikler";
 "true_count %lld" = "Doğru: %lld";

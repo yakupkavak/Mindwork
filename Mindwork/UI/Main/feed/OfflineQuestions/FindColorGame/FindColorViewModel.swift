@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUICore
 import SwiftUI
+import FirebaseCore
 
 final class FindColorViewModel: BaseViewModel {
     // Oyun süresi (cevap verince duracak)
@@ -167,6 +168,19 @@ final class FindColorViewModel: BaseViewModel {
             percentageTruth = 0
         }
         gameOver = true
+
+        getDataCall {
+            try await FirestorageManager.shared.saveGame(gameData: GameStoreModel(successRate: (Double(self.correctCount) / Double((self.correctCount + self.wrongCount))), gameType: .colorful_words, date: Timestamp(date: Date()), averageTime: self.averageResponseTime))
+        } onSuccess: { success in
+            print("game saved")
+        } onLoading: {
+            print("game saving")
+
+        } onError: { error in
+            print("game couldn't saved \(error?.localizedDescription ?? "")")
+
+        }
+
     }
 
     private func updateProgress() {

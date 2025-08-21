@@ -80,7 +80,7 @@ class FirestorageManager {
         let newListRef = database.collection(FireDatabase.COLLECTION_PATH).document()
         try await addDocument(documentRef: newListRef, value: collectionDocumentModel)
     }
-    
+
     private func addDocument<T: Encodable>(documentRef: DocumentReference, value: T) async throws {
         do {
             try documentRef.setData(from: value)
@@ -122,6 +122,13 @@ class FirestorageManager {
                 throw error
             }
         }
+    }
+    
+    func saveGame(gameData: GameStoreModel) async throws {
+        guard let userId = AuthManager.shared.getUserID() else { return }
+        
+        let eventReference = database.collection(FireDatabase.USERS_PATH).document(userId).collection("games").document()
+        try await addDocument(documentRef: eventReference, value: gameData)
     }
     
     func configureFcmToken(){

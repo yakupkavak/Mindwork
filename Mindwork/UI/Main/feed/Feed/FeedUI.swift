@@ -10,7 +10,6 @@ import SwiftUI
 struct FeedUI: View {
     @EnvironmentObject var routerFeed: RouterFeed
     @StateObject var viewModel = FeedViewModel()
-    @State private var showAlert = false
     @State private var selectedQuestionType: QuestionType?
     
     var body: some View {
@@ -22,8 +21,8 @@ struct FeedUI: View {
                     HStack(spacing: 16){
                         ForEach(viewModel.questionList){ question in
                             Button {
-                                showAlert = true
                                 selectedQuestionType = question.questionType
+                                navigateGame(type: selectedQuestionType)
                             } label: {
                                 FeedRowUI(foregroundColor: question.foregroundColor, backgroundColor: question.backgroundColor, title: Text(question.title)).frame(width: Width.screenFourtyTwoWidth)
                             }
@@ -36,7 +35,13 @@ struct FeedUI: View {
                 ScrollView(.horizontal, showsIndicators: false){
                     HStack(spacing: 16){
                         ForEach(viewModel.gameList){ game in
-                            FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
+                            Button {
+                                selectedQuestionType = game.questionType
+                                navigateGame(type: selectedQuestionType)
+                            } label: {
+                                FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
@@ -45,7 +50,13 @@ struct FeedUI: View {
                 ScrollView(.horizontal, showsIndicators: false){
                     HStack(spacing: 16){
                         ForEach(viewModel.gameList){ game in
-                            FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
+                            Button {
+                                selectedQuestionType = game.questionType
+                                navigateGame(type: selectedQuestionType)
+                            } label: {
+                                FeedRowUI(foregroundColor: game.foregroundColor, backgroundColor: game.backgroundColor, title: Text(game.title)).frame(width: Width.screenFourtyTwoWidth)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
@@ -53,6 +64,7 @@ struct FeedUI: View {
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.leading,16).padding(.top)
                 .background(Color.white).clipShape(RoundedTopLeftShape(radius: 70)).padding(.top,190)
+            /* Online
                 .customAlert(titleKey: QuestionStringKeys.question_select_title,
                              descriptionKey: QuestionStringKeys.question_select_description,
                              isPresented: $showAlert,
@@ -80,9 +92,25 @@ struct FeedUI: View {
                             routerFeed.navigate(to: .colorful_words)
                         }
                     }
-                })
-            
+                })*/
         }.ignoresSafeArea().background(Color.feedBackground)
+    }
+    private func navigateGame(type: QuestionType?) {
+        switch type {
+        case .was_it_there:
+            routerFeed.navigate(to: .was_it_there)
+        case .which_different:
+            routerFeed.navigate(to: .which_different)
+        case .colorful_words:
+            routerFeed.navigate(to: .colorful_words)
+        case .catch_pair:
+            routerFeed.navigate(to: .catch_pair)
+        case .firefly_title:
+            routerFeed.navigate(to: .firefly_title)
+        case .none:
+            routerFeed.navigate(to: .colorful_words)
+        }
+
     }
 }
 

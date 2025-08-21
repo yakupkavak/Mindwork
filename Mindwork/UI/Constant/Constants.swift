@@ -325,6 +325,24 @@ struct Constants {
         static let wrong_answer = LocalizedStringKey("wrong_answer")
         static let main_page = LocalizedStringKey("main_page")
         static let start_again = LocalizedStringKey("start_again")
+        static let number_zero = LocalizedStringKey("number_zero")
+        static let number_one = LocalizedStringKey("number_one")
+        static let number_two   = LocalizedStringKey("number_two")
+        static let number_three = LocalizedStringKey("number_three")
+        static let number_four  = LocalizedStringKey("number_four")
+        static let number_five  = LocalizedStringKey("number_five")
+        static let number_six   = LocalizedStringKey("number_six")
+        static let number_seven = LocalizedStringKey("number_seven")
+        static let number_eight = LocalizedStringKey("number_eight")
+        static let number_nine  = LocalizedStringKey("number_nine")
+        
+        static let one_before = LocalizedStringKey("one_before")
+        static let two_before = LocalizedStringKey("two_before")
+        static let three_before = LocalizedStringKey("three_before")
+        static let four_before = LocalizedStringKey("four_before")
+        static let showing_numbers = LocalizedStringKey("showing_numbers")
+        static let start_remember = LocalizedStringKey("start_remember")
+        static let loading = LocalizedStringKey("loading")
 
     }
     

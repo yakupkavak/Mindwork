@@ -35,7 +35,7 @@ struct BaseTabViewUI: View {
                             tabbarController.showTabbar()
                         }
                     case .catch_pair:
-                        FindColorUI().onAppear {
+                        CatchPairUI().onAppear {
                             tabbarController.hideTabbar()
                         }.onDisappear {
                             tabbarController.showTabbar()

@@ -17,6 +17,37 @@ struct FindColorAnswerModel{
     var optionText: LocalizedStringKey
     var isTrue: Bool
 }
+let askCatchNumber: [CatchNumberQuestion] = [
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3),
+    CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
+    CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
+    CatchNumberQuestion(questionTitle: StringKey.three_before, beforeNumber: 3)
+]
+
+struct CatchNumberQuestion{
+    var questionTitle: LocalizedStringKey
+    var beforeNumber: Int
+}
 
 let findColorQuestionList: [FindColorModel] = [
     

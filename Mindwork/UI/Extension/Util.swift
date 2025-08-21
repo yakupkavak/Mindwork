@@ -44,6 +44,7 @@ extension Color {
     }
 }
 import SwiftUI
+import Combine
 
 // MARK: - Kontrast hesaplama (WCAG luminance yaklaşımı)
 extension Color {
@@ -95,6 +96,47 @@ extension Color {
 }
 
 
+struct ColorNumberButton: View {
+    let title: LocalizedStringKey
+    let color: Color
+    let action: () -> Void
+
+    var autoCycle: Bool = true
+    var cycleInterval: TimeInterval = 1.8
+
+    @State private var colorIndex = 0
+    private let palette: [Color] = [.blue, .orange, .green, .red, .cyan]
+
+    private var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
+        Timer.publish(every: cycleInterval, on: .main, in: .common).autoconnect()
+    }
+
+    var body: some View {
+        let baseColor = autoCycle ? palette[colorIndex % palette.count] : color
+        let displayColor = baseColor.adjustedForLightBackground
+
+        Button(action: action) {
+            Text(title)
+                .font(.body.weight(.semibold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .frame(minWidth: 120)
+                .background(displayColor)
+                .foregroundColor(displayColor.contrastTextColor)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(displayColor.adaptiveBorder, lineWidth: 1)
+                )
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
+                .animation(.easeInOut(duration: 0.45), value: colorIndex)
+        }
+        .onReceive(timer) { _ in
+            guard autoCycle else { return }
+            colorIndex = (colorIndex + 1) % palette.count
+        }
+    }
+}
 // MARK: - Renkli cevap butonu
 struct ColorAnswerButton: View {
     let title: LocalizedStringKey
