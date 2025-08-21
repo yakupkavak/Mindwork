@@ -162,3 +162,53 @@ struct ColorAnswerButton: View {
         }
     }
 }
+
+struct DownSizedImageView<Content: View>: View {
+    var image: UIImage?
+    var size: CGSize
+    @ViewBuilder var content: (Image) -> Content
+    @State private var downsizedImageView: Image?
+    
+    var body: some View {
+        ZStack{
+            if let downsizedImageView {
+                content(downsizedImageView)
+            }
+        }.onAppear {
+            guard downsizedImageView == nil else { return }
+            //Dynamic image changes
+            createDownsizedImage(image: image)
+        }.onChange(of: image) { oldValue, newValue in
+            guard oldValue != newValue else { return }
+            createDownsizedImage(image: newValue)
+        }
+    }
+    
+    private func createDownsizedImage(image: UIImage?){
+        guard let image = image else { return }
+        let aspectSize = image.size.aspectFit(to: size)
+        Task.detached(priority: .high){
+            let renderer = UIGraphicsImageRenderer(size: aspectSize)
+            let resizedImage = renderer.image {ctx in
+                image.draw(in: .init(origin: .zero, size: aspectSize))
+            }
+            
+            await MainActor.run{
+                downsizedImageView = .init(uiImage: resizedImage)
+            }
+        }
+    }
+}
+
+extension CGSize {
+    
+    //This function will return a new size that fits the given size in aspect ratio
+    func aspectFit(to: CGSize) -> CGSize{
+        let scaleX = to.width / self.width
+        let scaleY = to.height / self.height
+        
+        //Changed this to min to actually fit the image within the given size
+        let aspectRatio = min(scaleX, scaleY)
+        return .init(width: aspectRatio * width, height: aspectRatio * height)
+    }
+}

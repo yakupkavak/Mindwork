@@ -32,7 +32,8 @@ struct UserListUI: View {
                     ])
                     Spacer()
                     MenuSection(items: [
-                        MenuItem(icon: "arrow.left.square.fill", title: StringKey.log_out,onClick:{ router.navigate(to: .userInfo)}),
+                        MenuItem(icon: "arrow.left.square.fill", title: StringKey.log_out,onClick:{ viewModel.signOut()
+                        }),
                     ])
                 }
                 .padding()

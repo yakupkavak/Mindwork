@@ -69,11 +69,11 @@ struct GameSessionModel: Identifiable, Codable {
 }
 
 enum GameType: String, Codable{
-    case question
-    case story
-    case truthLie
-    case whatIf
-    case memory
+    case was_it_there
+    case which_different
+    case colorful_words
+    case catch_pair
+    case firefly_title
 }
 
 enum StoryType: String, Codable{

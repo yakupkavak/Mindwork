@@ -335,6 +335,19 @@ class FirestorageManager {
         return user
     }
     
+    func fetchProfileScores() async throws -> [GameStoreModel] {
+        guard let userId = AuthManager.shared.getUserID() else {
+            throw RelationError.invalidUserId
+        }
+        let userRef = database.collection(FireDatabase.USERS_PATH)
+            .document(userId).collection("games")
+        
+        let snap = try await userRef.order(by: "date", descending: true)
+            .getDocuments()
+        
+        return try snap.documents.map { try $0.data(as: GameStoreModel.self) }
+    }
+    
     func updateProfile(name: String, surname: String, email: String?, phoneNumber: String?) async throws {
         guard let userId = AuthManager.shared.getUserID() else {
             throw RelationError.invalidUserId

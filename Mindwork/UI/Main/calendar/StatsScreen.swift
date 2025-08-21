@@ -1,6 +1,7 @@
 
 import SwiftUI
 import Charts
+import Kingfisher
 
 struct CalendarUI: View {
     @StateObject private var vm = StatsViewModel()
@@ -20,6 +21,9 @@ struct CalendarUI: View {
                     
                 }.background(Color(.systemGroupedBackground))
                     .navigationBarTitleDisplayMode(.inline)
+                    .refreshable {
+                                    await vm.reloadAsync()
+                                    }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
@@ -30,13 +34,38 @@ struct CalendarUI: View {
 }
 
 // MARK: - Sections
+private struct RangePill: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)                // type checker'ı rahatlat
+                .fontWeight(.semibold)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background(backgroundView)        // ayrı ViewBuilder
+                .foregroundColor(isSelected ? .white : .primary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var backgroundView: some View {
+        let fillColor: Color = isSelected ? .black : Color(.secondarySystemBackground)
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(fillColor)
+    }
+}
 
 private extension CalendarUI {
     var header: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("Hi, David")
+                    Text("Hi, \(vm.user.name)")
                         .font(.title3).fontWeight(.semibold)
                     Text("👋")
                 }
@@ -45,35 +74,29 @@ private extension CalendarUI {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 36))
-                .foregroundStyle(.secondary)
+            KFImage.profile(urlString: vm.user.profileImageUrl, size: 60)
         }
         .padding(.top, 8)
     }
     
     var rangePicker: some View {
         HStack(spacing: 8) {
-            ForEach(StatsRange.allCases) { r in
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        vm.load(for: r)
+            ForEach(StatsRange.allCases, id: \.self) { r in
+                RangePill(
+                    title: r.rawValue,
+                    isSelected: vm.selected == r,
+                    action: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            vm.selected = r
+                        }
                     }
-                } label: {
-                    Text(r.rawValue)
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(vm.selected == r ? Color.black : Color(.secondarySystemBackground))
-                        )
-                        .foregroundStyle(vm.selected == r ? .white : .primary)
-                }
+                )
             }
         }
         .padding(6)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(.tertiarySystemBackground)))
+        .background(
+            RoundedRectangle(cornerRadius: 14).fill(Color(.tertiarySystemBackground))
+        )
     }
     
     var chartCard: some View {
@@ -128,7 +151,7 @@ private extension CalendarUI {
                 .font(.headline)
             
             VStack(spacing: 10) {
-                scoreRow(icon: "timer", title: labelForTimeTitle(), value: formatMinutes(vm.totalMinutes))
+                scoreRow(icon: "timer", title: labelForTimeTitle(), value: formatMinutesDouble(vm.totalMinutes))
                 scoreRow(icon: "checkmark.seal", title: "Success Rate", value: "\(Int(vm.successRate * 100))%")
                 scoreRow(icon: "flag.checkered", title: goalTitle(), value: vm.goalDone ? "Done" : "Pending")
             }
@@ -137,7 +160,9 @@ private extension CalendarUI {
         .background(RoundedRectangle(cornerRadius: 18).fill(.background))
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
-    
+    func formatMinutesDouble(_ minutes: Double) -> String {
+        String(format: "%.2f min", minutes)
+    }
     func scoreRow(icon: String, title: String, value: String) -> some View {
         HStack {
             Image(systemName: icon)
@@ -252,7 +277,7 @@ private extension CalendarUI {
                             Text(g.name)
                                 .font(.subheadline.weight(.semibold))
                             Spacer()
-                            Text("Avg \(g.avgTime)m")
+                            Text("Avg \(g.avgTime)s")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

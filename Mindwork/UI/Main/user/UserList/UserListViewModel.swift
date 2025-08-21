@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FirebaseAuth
 
 class UserListViewModel: BaseViewModel {
     
@@ -41,6 +42,13 @@ class UserListViewModel: BaseViewModel {
             self.loading = false
             self.error = error?.localizedDescription ?? ""
         })
+    }
+    func signOut(){
+        do {
+            try Auth.auth().signOut()
+        }catch {
+            self.error = error.localizedDescription ?? ""
+        }
     }
     
     private func updateRelation(){

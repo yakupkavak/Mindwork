@@ -14,6 +14,26 @@ struct FeedUI: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+            DownSizedImageView(image: UIImage(named: "palmiye"),
+                               size: CGSize(width: 200, height: 200)) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200)
+            }.frame(maxWidth: .infinity, alignment: .topTrailing)
+                               .offset(x: 24, y: 20)
+                               .zIndex(0.9)
+            
+            DownSizedImageView(image: UIImage(named: "palmiye"),
+                               size: CGSize(width: 140, height: 140)) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 140)
+            }.frame(maxWidth: .infinity, alignment: .topLeading)
+                               .offset(x: 24, y: 60)
+                               .zIndex(0.9)
+            
             ScrollView{
                 // Subjects bölümü
                 SubjectsView(title: QuestionStringKeys.memory_title, description: QuestionStringKeys.memory_description).frame(maxWidth: .infinity,alignment: .leading)
@@ -61,6 +81,7 @@ struct FeedUI: View {
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.leading,16).padding(.top)
                 .background(Color.white).clipShape(RoundedTopLeftShape(radius: 70)).padding(.top,190)
+                .zIndex(1)
             /* Online
                 .customAlert(titleKey: QuestionStringKeys.question_select_title,
                              descriptionKey: QuestionStringKeys.question_select_description,
@@ -90,7 +111,7 @@ struct FeedUI: View {
                         }
                     }
                 })*/
-        }.ignoresSafeArea().background(Color.feedBackground)
+        }.ignoresSafeArea().background(Color.feedBackground.opacity(0.8))
     }
     
     private func navigateGame(type: QuestionType?) {

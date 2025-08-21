@@ -11,7 +11,7 @@ import FirebaseFirestore
 struct GameStoreModel: Codable {
     @DocumentID var id: String?
     var successRate: Double
-    var gameType: QuestionType
+    var gameType: GameType
     var date: Timestamp
     var averageTime: Double
 }

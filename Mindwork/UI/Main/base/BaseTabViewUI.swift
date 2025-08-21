@@ -45,7 +45,11 @@ struct BaseTabViewUI: View {
                     case .was_it_there:
                         EmptyView()
                     case .which_different:
-                        EmptyView()
+                        WhichDifferentUI().onAppear {
+                            tabbarController.hideTabbar()
+                        }.onDisappear {
+                            tabbarController.showTabbar()
+                        }
                     }
                 }.tabbarVisibility(visibility: tabbarController.isVisible)
             }.tabItem {
