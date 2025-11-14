@@ -39,7 +39,7 @@ struct GameStats: Identifiable {
     let id = UUID()
     let name: String
     let successRate: Double   // 0...1
-    let avgTime: Int          // dakika (yuvarlanmış)
+    let avgSeconds: Double    // ✅ Firestore’daki averageTime (saniye/soru)
 }
 
 final class StatsViewModel: BaseViewModel {
@@ -209,15 +209,15 @@ final class StatsViewModel: BaseViewModel {
         let grouped = Dictionary(grouping: items, by: { $0.gameType })
         return grouped.keys.sorted(by: { $0.rawValue < $1.rawValue }).map { type in
             let arr = grouped[type] ?? []
-            let avgSR   = average(of: arr.map { $0.successRate })
-            let avgPerQ = average(of: arr.map { $0.averageTime })     // saniye / soru
-            let avgSec  = Int((avgPerQ * 10.0).rounded())             // saniye / oyun
-            return GameStats(name: prettyName(for: type),
-                             successRate: avgSR,
-                             avgTime: avgSec)
+            let avgSR     = average(of: arr.map { $0.successRate })
+            let avgPerQ   = average(of: arr.map { $0.averageTime })   // saniye/soru (ham)
+            return GameStats(
+                name: prettyName(for: type),
+                successRate: avgSR,
+                avgSeconds: avgPerQ                                   // ✅ çarpma yok
+            )
         }
     }
-
     private func prettyName(for type: GameType) -> String {
         switch type {
         case .which_different: return "Which One is Different"

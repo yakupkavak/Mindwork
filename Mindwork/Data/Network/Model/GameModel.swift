@@ -5,7 +5,7 @@
 //  Created by Yakup Kavak on 30.07.2025.
 //
 import FirebaseFirestore
-import SwiftUICore
+import SwiftUI
 
 struct GameLocalModel: Identifiable{
     var id = UUID()

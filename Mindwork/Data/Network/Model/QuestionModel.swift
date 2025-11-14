@@ -6,7 +6,7 @@
 //
 
 import FirebaseFirestore
-import SwiftUICore
+import SwiftUI
 
 struct QuestionLocalModel: Identifiable{
     var id = UUID()
@@ -45,4 +45,6 @@ enum QuestionType: String, Codable{
     case colorful_words
     case catch_pair
     case firefly_title
+    case reflexGame
+    case wordCube
 }

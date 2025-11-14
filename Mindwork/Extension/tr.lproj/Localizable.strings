@@ -261,6 +261,9 @@ Partnerini davet et, birlikte anılarla dolu bir yolculuğa çıkın ☘️";
 "colorful_words" = "Orada mıydı?";
 "was_it_there" = "Renkli Kelimeler";
 "which_different" = "Hangisi Farklı";
+"word_cube_title" = "Kelime Küpü";
+"reflex_title" = "Refleks";
+
 // WHICH COLOR KEYS
 "which_color_white"      = "Aşağıdakilerden hangisi beyaz renklidir";
 "which_color_black"      = "Aşağıdakilerden hangisi siyah renklidir";

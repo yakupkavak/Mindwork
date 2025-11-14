@@ -488,7 +488,9 @@ struct Constants {
         static let colorful_words       = LocalizedStringKey("colorful_words")
         static let was_it_there       = LocalizedStringKey("was_it_there")
         static let which_different       = LocalizedStringKey("which_different")
-        
+        static let reflex_title = LocalizedStringKey("reflex_title")
+        static let word_cube_title = LocalizedStringKey("word_cube_title")
+
         static let philosophy_title = LocalizedStringKey("philosophy_title")
         static let firsts_title     = LocalizedStringKey("firsts_title")
         static let dreams_title     = LocalizedStringKey("dreams_title")

@@ -5,7 +5,7 @@
 //  Created by Yakup Kavak on 1.08.2025.
 //
 
-import SwiftUICore
+import SwiftUI
 
 
 let loveModels: [LocalQuestion] = [
@@ -24,6 +24,18 @@ let gamesTitles: [QuestionLocalModel] = [
         title: QuestionStringKeys.catch_pair,
         foregroundColor: Color(hex: "#607EA6"),
         backgroundColor: Color(hex: "#253759")
+    ),
+    QuestionLocalModel(
+        questionType: .wordCube,
+        title: QuestionStringKeys.word_cube_title,
+        foregroundColor: Color(hex: "#D95FA2"),
+        backgroundColor: Color(hex: "#F2AEAE")
+    ),
+    QuestionLocalModel(
+        questionType: .reflexGame,
+        title: QuestionStringKeys.reflex_title,
+        foregroundColor: Color(hex: "#252617"),
+        backgroundColor: Color(hex: "#BF8A49")
     )
 ]
 
@@ -45,6 +57,6 @@ let questionTitles: [QuestionLocalModel] = [
         title: QuestionStringKeys.which_different,
         foregroundColor: Color(hex: "#A8BF56"),
         backgroundColor: Color(hex: "#658C6F")
-    )
+    ),
 ]
 

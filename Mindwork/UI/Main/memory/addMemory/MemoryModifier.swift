@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftUICore
+import SwiftUI
 
 struct MemoryPhotoModifier: ViewModifier {
     var index: Int

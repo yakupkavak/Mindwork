@@ -17,13 +17,14 @@ final class RouterFeed: ObservableObject {
         case colorful_words
         case was_it_there
         case which_different
+        case reflex
+        case word_cube
     }
     
     @Published var navPath = NavigationPath()
     
     func navigate(to destination: Destination) {
         navPath.append(destination)
-        print("feed",navPath)
     }
     
     func navigateBack() {

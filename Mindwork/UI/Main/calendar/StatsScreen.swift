@@ -277,7 +277,7 @@ private extension CalendarUI {
                             Text(g.name)
                                 .font(.subheadline.weight(.semibold))
                             Spacer()
-                            Text("Avg \(g.avgTime)s")
+                            Text(String(format: "Avg %.2f s", g.avgSeconds))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

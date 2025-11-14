@@ -41,7 +41,11 @@ struct BaseTabViewUI: View {
                             tabbarController.showTabbar()
                         }
                     case .firefly_title:
-                        EmptyView()
+                        FirefliesUI().onAppear {
+                            tabbarController.hideTabbar()
+                        }.onDisappear {
+                            tabbarController.showTabbar()
+                        }
                     case .was_it_there:
                         EmptyView()
                     case .which_different:
@@ -50,15 +54,27 @@ struct BaseTabViewUI: View {
                         }.onDisappear {
                             tabbarController.showTabbar()
                         }
+                    case .reflex:
+                        ReflexUI().onAppear {
+                            tabbarController.hideTabbar()
+                        }.onDisappear {
+                            tabbarController.showTabbar()
+                        }
+                    case .word_cube:
+                        WordCubeUI().onAppear {
+                            tabbarController.hideTabbar()
+                        }.onDisappear {
+                            tabbarController.showTabbar()
+                        }
                     }
                 }.tabbarVisibility(visibility: tabbarController.isVisible)
             }.tabItem {
-                    Label("Feed", systemImage: "house")
+                    Label("Games", systemImage: "house")
                 }.tag(Tab.feed)
             
             CalendarUI()
                 .tabItem {
-                    Label("Calendar", systemImage: "calendar")
+                    Label("Statistic", systemImage: "chart.bar")
                 }.tag(Tab.history)
             /*
             NavigationStack(path: $routerMemory.navPath) {

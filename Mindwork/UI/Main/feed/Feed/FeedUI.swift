@@ -126,10 +126,13 @@ struct FeedUI: View {
             routerFeed.navigate(to: .catch_pair)
         case .firefly_title:
             routerFeed.navigate(to: .firefly_title)
+        case .reflexGame:
+            routerFeed.navigate(to: .reflex)
+        case .wordCube:
+            routerFeed.navigate(to: .word_cube)
         case .none:
             routerFeed.navigate(to: .colorful_words)
         }
-
     }
 }
 

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftUICore
+import SwiftUI
 
 struct CategoryModel: Codable,Equatable,Hashable {
     var colorHex: String

@@ -5,7 +5,6 @@
 
 import Foundation
 import Combine
-import SwiftUICore
 import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
