@@ -27,7 +27,7 @@ struct SignInUI: View {
                 Spacer().frame(height: Height.largeHeight)
                 
                 BigSizeBoldGrad(text: StringKey.welcome)
-                
+                BigSizeBoldGrad(text: StringKey.mindWork).padding(.top, -24)
                 tvSubHeadline(text: StringKey.signAccount, color: Color.blue500)
                 
                 VStack(spacing: Height.mediumHeight) {

@@ -29,43 +29,19 @@ struct BaseTabViewUI: View {
                     case .feedView:
                         FeedUI().environmentObject(routerFeed)
                     case .colorful_words:
-                        FindColorUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        FindColorUI()
                     case .catch_pair:
-                        CatchPairUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        CatchPairUI()
                     case .firefly_title:
-                        FirefliesUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        FirefliesUI()
                     case .was_it_there:
                         EmptyView()
                     case .which_different:
-                        WhichDifferentUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        WhichDifferentUI()
                     case .reflex:
-                        ReflexUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        ReflexUI()
                     case .word_cube:
-                        WordCubeUI().onAppear {
-                            tabbarController.hideTabbar()
-                        }.onDisappear {
-                            tabbarController.showTabbar()
-                        }
+                        WordCubeUI()
                     }
                 }.tabbarVisibility(visibility: tabbarController.isVisible)
             }.tabItem {

@@ -166,6 +166,7 @@ struct Constants {
     
     struct StringKeys {
         static let welcome = LocalizedStringKey("welcome")
+        static let mindWork = LocalizedStringKey("mindwork")
         static let signAccount = LocalizedStringKey("sign_account")
         static let username = LocalizedStringKey("username")
         static let password = LocalizedStringKey("password")
