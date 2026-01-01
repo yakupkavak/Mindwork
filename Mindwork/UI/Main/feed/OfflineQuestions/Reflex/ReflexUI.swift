@@ -1,87 +1,113 @@
-//
-//  ContentView.swift
-//  Reflex
-//
-//  Created by Sena Yıldız on 13.11.2025.
-//
-
 import SwiftUI
 
 struct ReflexUI: View {
-    
     @StateObject private var vm = ReflexGameViewModel()
     @EnvironmentObject var router: RouterFeed
+    @State private var circleScale: CGFloat = 1.0
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [.blue.opacity(0.3), .purple.opacity(0.3)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 30) {
-                VStack {
-                    Text("🟢 Yeşil – 🟡 Sarı – 🔴 Kırmızı")
-                        .font(.largeTitle)
-                        .fontWeight(.heavy)
-                        .foregroundStyle(LinearGradient(colors: [.purple, .blue], startPoint: .leading, endPoint: .trailing))
-                    
-                    Text(vm.message)
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .foregroundColor(.white)
+        VStack(spacing: 20) {
+            // Header
+            HStack {
+                btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
+                    router.navigateBack()
                 }
-                .padding(.top)
-                
                 Spacer()
+                VStack(spacing: 2) {
+                    Text("SKOR").font(.caption2).bold().foregroundColor(.secondary)
+                    Text("\(vm.score)").font(.title2).bold()
+                }
+                Spacer()
+                btnSystemIconTransparent(iconSystemName: "arrow.counterclockwise", color: .black) {
+                    vm.startGame()
+                }
+            }
+            .padding(.horizontal)
+
+            // Hedef Kartı
+            VStack(spacing: 12) {
+                Text("DOKUNULACAK RENK")
+                    .font(.system(size: 11, weight: .black))
+                    .foregroundColor(.secondary)
+                    .tracking(2)
+                
+                Text(vm.targetColor.name.uppercased())
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundColor(vm.targetColor.color)
+                    .padding(.horizontal, 35)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(vm.targetColor.color.opacity(0.12))
+                    )
+            }
+            .padding(.top, 5)
+
+            Spacer()
+
+            // Oyun Alanı
+            ZStack {
+                Circle()
+                    .fill(vm.currentColor.color.opacity(0.2))
+                    .frame(width: 270, height: 270)
+                    .blur(radius: 40)
+                    .animation(.easeInOut, value: vm.currentColor)
                 
                 Circle()
                     .fill(vm.currentColor.color)
                     .frame(width: 200, height: 200)
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 8)
+                    .scaleEffect(circleScale)
+                    .shadow(color: vm.currentColor.color.opacity(0.3), radius: 15)
                     .onTapGesture {
-                        vm.handleTap()
+                        triggerHaptic()
+                        withAnimation(.interactiveSpring(response: 0.1, dampingFraction: 0.5)) {
+                            circleScale = 0.85
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+                                circleScale = 1.0
+                            }
+                            vm.handleTap()
+                        }
                     }
-                    .animation(.easeInOut(duration: 0.2), value: vm.currentColor)
-                
-                Spacer()
-                
-                VStack(spacing: 10) {
-                    Text("Skor: \(vm.score)")
-                        .font(.title2)
-                        .bold()
-                        .foregroundColor(.white)
-                    Text("En İyi: \(vm.highScore)")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                
-                if vm.gameState == .ready {
-                    Button(action: { vm.startGame() }) {
-                        Text("Başla")
-                            .font(.title2)
-                            .bold()
-                            .padding(.horizontal, 50)
-                            .padding(.vertical, 15)
-                            .background(
-                                LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing)
-                            )
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                            .shadow(radius: 8)
-                    }
-                    .padding(.bottom)
-                } else if vm.gameState == .gameOver {
-                    Button(action: { vm.startGame() }) {
-                        Text("Tekrar Oyna")
-                            .font(.title2)
-                    }
-                }
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: vm.currentColor)
             }
-            
+
+            Text(vm.message)
+                .font(.footnote).bold()
+                .foregroundColor(.gray)
+                .frame(height: 40)
+
+            Spacer()
+
+            if vm.gameState == .ready {
+                btnTextGradientInfinity(action: { vm.startGame() }, text: LocalizedStringKey("BAŞLA"))
+                    .padding(.horizontal, 50)
+                    .padding(.bottom, 30)
+            }
         }
+        .padding(.vertical)
+        .customAnswerAlert(
+            isPresented: $vm.gameOver,
+            titleKey: LocalizedStringKey("Oyun Bitti"),
+            trueCount: LocalizedStringKey("Doğru: \(vm.correctCount)"),
+            wrongCount: LocalizedStringKey("\(vm.message)"),
+            averageAnswer: LocalizedStringKey(String(format: "Hızın: %.2f sn", vm.averageResponseTime)),
+            accuracy: LocalizedStringKey("Skor: \(vm.score)"),
+            acceptText: LocalizedStringKey("Yeniden Dene"),
+            deniedText: LocalizedStringKey("Kapat"),
+            acceptFunc: { vm.startGame() },
+            deniedFunc: { router.navigateBack() }
+        )
     }
+
+    private func triggerHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+}
+
+#Preview {
+    ReflexUI().environmentObject(RouterFeed())
 }

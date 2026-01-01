@@ -74,6 +74,7 @@ enum GameType: String, Codable{
     case colorful_words
     case catch_pair
     case firefly_title
+    case reflex
 }
 
 enum StoryType: String, Codable{

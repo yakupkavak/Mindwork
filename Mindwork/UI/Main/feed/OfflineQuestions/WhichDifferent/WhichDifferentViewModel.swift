@@ -1,76 +1,65 @@
-//
-//  WhichDifferentViewModel.swift
-//  Tendria
-//
-
 import Foundation
 import Combine
 import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
 
-// Tek sorunun opsiyonu
 struct WhichDifferentOption {
     let imageName: String
     let isDifferent: Bool
 }
 
-// Havuz çifti
 struct WDImagePair: Equatable {
     let mainImage: String
     let differentImage: String
 }
 
-// ViewModel
 final class WhichDifferentViewModel: BaseViewModel {
-    // MARK: - Oyun sabitleri
     let lastQuestionNumber = 10
+    let timeLimit: Double = 10.0
     
-    // MARK: - Yayınlanan durumlar
-    @Published var timeCounter: Double = 0.0      // saniye; cevap verince durdurulur
-    @Published var uiTick: Int = 0                // 1 sn’de bir artar (UI anim/etki için)
-    
+    @Published var timeCounter: Double = 10.0
+    @Published var uiTick: Int = 0
     @Published var questionNumber = 1 { didSet { updateProgress() } }
     @Published var questionProgress = 0.1
     @Published var questionTitle: LocalizedStringKey = StringKey.empty
-    
     @Published var answeredQuestion = false
     @Published var isAnswerTrue = false
     @Published var gameOver = false
-    
-    // Görsel opsiyonlar (2x2)
     @Published var currentOptions: [WhichDifferentOption] = []
     
-    // MARK: - İstatistikler
     @Published var correctCount: Int = 0
     @Published var wrongCount: Int = 0
-    @Published var averageResponseTime: Double = 0.0   // saniye
+    @Published var averageResponseTime: Double = 0.0
     @Published var percentageTruth: Double = 0.0
     private var totalResponseTime: Double = 0.0
     private var totalAnswered: Int = 0
     
-    // MARK: - Timer’lar
     private var gameTimer = Timer()
     private var uiTimer = Timer()
     
-    // MARK: - Havuz / Soru listesi
-    private var pairsPool: [WDImagePair] = [
-        .init(mainImage: "bike",   differentImage: "bike1"),
-        .init(mainImage: "family", differentImage: "family2"),
-        .init(mainImage: "mickey1", differentImage: "mickey2"),
-        .init(mainImage: "yemek",  differentImage: "yemek2"),
-        // tersleri
-        .init(mainImage: "bike1",   differentImage: "bike"),
-        .init(mainImage: "family2", differentImage: "family"),
-        .init(mainImage: "mickey2", differentImage: "mickey1"),
-        .init(mainImage: "yemek2",  differentImage: "yemek")
-    ]
-    private var lastUsedPair: WDImagePair?
+    private var easyPairs: [WDImagePair] = []
+    private var mediumPairs: [WDImagePair] = []
+    private var hardPairs: [WDImagePair] = []
     private var usedPairs: [WDImagePair] = []
+
+    // MARK: - Zorluk Seviyesi Mantığı (Güncellendi)
+    private var pairsPool: [WDImagePair] {
+        switch questionNumber {
+        case 1...4:
+            return easyPairs
+        case 5...8:
+            return mediumPairs
+        case 9...10:
+            return hardPairs
+        default:
+            return easyPairs
+        }
+    }
     
-    // MARK: - Lifecycle
     override init() {
         super.init()
+        setupImagePools()
         initializeGame()
     }
     
@@ -78,65 +67,53 @@ final class WhichDifferentViewModel: BaseViewModel {
         stopGameTimer()
         stopUiTimer()
     }
-    
-    // MARK: - Game flow
-    func startAgain() {
-        stopGameTimer()
-        // State reset
-        timeCounter = 0.0
-        questionNumber = 1
-        answeredQuestion = false
-        isAnswerTrue = false
-        gameOver = false
+
+    private func setupImagePools() {
+        let mediumNums = [7, 8, 12, 15, 20, 26, 27]
+        let hardNums = [1, 9, 11, 13, 18, 22, 25, 30]
+        let specialEasyNames = [("bike", "bike1"), ("family", "family2"), ("mickey1", "mickey2"), ("yemek", "yemek2")]
+
+        for i in 1...30 {
+            if i == 23 || i == 28 { continue }
+            
+            let p1 = WDImagePair(mainImage: "\(i)a", differentImage: "\(i)b")
+            let p2 = WDImagePair(mainImage: "\(i)b", differentImage: "\(i)a")
+            
+            if mediumNums.contains(i) {
+                mediumPairs.append(contentsOf: [p1, p2])
+            } else if hardNums.contains(i) {
+                hardPairs.append(contentsOf: [p1, p2])
+            } else {
+                easyPairs.append(contentsOf: [p1, p2])
+            }
+        }
+
+        for namePair in specialEasyNames {
+            let p1 = WDImagePair(mainImage: namePair.0, differentImage: namePair.1)
+            let p2 = WDImagePair(mainImage: namePair.1, differentImage: namePair.0)
+            easyPairs.append(contentsOf: [p1, p2])
+        }
         
-        // İstatistikler sıfırla
-        correctCount = 0
-        wrongCount = 0
-        averageResponseTime = 0.0
-        totalResponseTime = 0.0
-        totalAnswered = 0
-        
-        updateProgress()
-        
-        // Havuzu tazele
-        usedPairs.removeAll()
-        lastUsedPair = nil
-        pairsPool.shuffle()
-        
-        applyQuestion()
-        startGameTimer()
+        easyPairs.shuffle()
+        mediumPairs.shuffle()
+        hardPairs.shuffle()
     }
-    
-    private func initializeGame() {
-        updateProgress()
-        pairsPool.shuffle()
-        applyQuestion()
-        startGameTimer()
-        startUiTimer()   // UI için saniyelik tetik
-    }
-    
+
     private func applyQuestion() {
-        // Başlık
         questionTitle = LocalizedStringKey("Which one is different?")
         
-        // Tekrarsız bir çift seç
-        var candidate: WDImagePair?
-        var guardCounter = 0
-        repeat {
-            candidate = pairsPool.randomElement()
-            guardCounter += 1
-        } while (candidate == lastUsedPair || (candidate != nil && usedPairs.contains(candidate!))) && guardCounter < 50
-        
-        // Havuz biterse sıfırla
-        if candidate == nil || guardCounter >= 50 {
-            usedPairs.removeAll()
-            candidate = pairsPool.randomElement()
+        let availablePairs = pairsPool.filter { pair in
+            !usedPairs.contains(where: {
+                ($0.mainImage == pair.mainImage && $0.differentImage == pair.differentImage) ||
+                ($0.mainImage == pair.differentImage && $0.differentImage == pair.mainImage)
+            })
         }
-        guard let pair = candidate else { return }
-        lastUsedPair = pair
+        
+        let finalPool = availablePairs.isEmpty ? pairsPool : availablePairs
+        guard let pair = finalPool.randomElement() else { return }
+        
         usedPairs.append(pair)
         
-        // 4 opsiyonu kur (3 ana + 1 farklı), konumları karıştır
         let differentIndex = Int.random(in: 0..<4)
         var opts: [WhichDifferentOption] = []
         for i in 0..<4 {
@@ -148,23 +125,47 @@ final class WhichDifferentViewModel: BaseViewModel {
         }
         currentOptions = opts.shuffled()
     }
+
+    func startAgain() {
+        stopGameTimer()
+        timeCounter = timeLimit
+        questionNumber = 1
+        answeredQuestion = false
+        isAnswerTrue = false
+        gameOver = false
+        correctCount = 0
+        wrongCount = 0
+        averageResponseTime = 0.0
+        totalResponseTime = 0.0
+        totalAnswered = 0
+        usedPairs.removeAll()
+        updateProgress()
+        applyQuestion()
+        startGameTimer()
+    }
+    
+    private func initializeGame() {
+        updateProgress()
+        applyQuestion()
+        startGameTimer()
+        startUiTimer()
+    }
     
     func checkQuestion(selectedIndex: Int) {
         guard !answeredQuestion else { return }
-        guard currentOptions.indices.contains(selectedIndex) else { return }
-        
-        stopGameTimer() // süreyi dondur
-        
-        let selected = currentOptions[selectedIndex]
+        stopGameTimer()
         answeredQuestion = true
-        isAnswerTrue = selected.isDifferent
         
-        // İstatistikler
-        let t = timeCounter
-        totalResponseTime += t
+        if selectedIndex != -1 && currentOptions.indices.contains(selectedIndex) {
+            isAnswerTrue = currentOptions[selectedIndex].isDifferent
+            totalResponseTime += (timeLimit - timeCounter)
+        } else {
+            isAnswerTrue = false
+            totalResponseTime += timeLimit
+        }
+        
         totalAnswered += 1
         averageResponseTime = totalResponseTime / Double(totalAnswered)
-        
         if isAnswerTrue { correctCount += 1 } else { wrongCount += 1 }
     }
     
@@ -175,10 +176,11 @@ final class WhichDifferentViewModel: BaseViewModel {
     }
     
     private func prepareNewQuestion() {
-        timeCounter = 0
+        timeCounter = timeLimit
         answeredQuestion = false
-        applyQuestion()
-        startGameTimer() // her yeni soruda süreyi yeniden başlat
+        isAnswerTrue = false
+        applyQuestion() // Artık yeni questionNumber'a göre pairsPool'dan çekecek
+        startGameTimer()
     }
     
     func endGame() {
@@ -187,49 +189,33 @@ final class WhichDifferentViewModel: BaseViewModel {
         percentageTruth = total > 0 ? (100.0 * Double(correctCount) / Double(total)) : 0.0
         gameOver = true
         
-        // Firestore’a kaydet
         getDataCall {
             try await FirestorageManager.shared.saveGame(
                 gameData: GameStoreModel(
                     successRate: (Double(self.correctCount) / Double(max(1, self.correctCount + self.wrongCount))),
                     gameType: .which_different,
                     date: Timestamp(date: Date()),
-                    averageTime: self.averageResponseTime // saniye/soru ortalaması
+                    averageTime: self.averageResponseTime
                 )
             )
-        } onSuccess: { _ in
-            print("which_different saved")
-        } onLoading: {
-            print("which_different saving...")
-        } onError: { error in
-            print("save error \(error?.localizedDescription ?? "")")
-        }
+        } onSuccess: { _ in } onLoading: { } onError: { _ in }
     }
     
-    // MARK: - Timerlar
     private func startGameTimer() {
         stopGameTimer()
         gameTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
-            self?.timeCounter += 0.01
+            guard let self = self else { return }
+            if self.timeCounter > 0 { self.timeCounter -= 0.01 }
+            else { self.checkQuestion(selectedIndex: -1) }
         }
         RunLoop.main.add(gameTimer, forMode: .common)
     }
-    private func stopGameTimer() {
-        gameTimer.invalidate()
-    }
+    
+    private func stopGameTimer() { gameTimer.invalidate() }
     private func startUiTimer() {
-        stopUiTimer()
-        uiTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            self?.uiTick += 1
-        }
+        uiTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.uiTick += 1 }
         RunLoop.main.add(uiTimer, forMode: .common)
     }
-    private func stopUiTimer() {
-        uiTimer.invalidate()
-    }
-    
-    // MARK: - Yardımcı
-    private func updateProgress() {
-        questionProgress = Double(questionNumber) / Double(lastQuestionNumber)
-    }
+    private func stopUiTimer() { uiTimer.invalidate() }
+    private func updateProgress() { questionProgress = Double(questionNumber) / Double(lastQuestionNumber) }
 }

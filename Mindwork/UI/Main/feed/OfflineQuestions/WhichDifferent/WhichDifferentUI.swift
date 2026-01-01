@@ -5,7 +5,6 @@ struct WhichDifferentUI: View {
     @EnvironmentObject var router: RouterFeed
     @State private var showTimeSheet = false
     
-    // 2x2 grid
     private let columns: [GridItem] = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -35,12 +34,25 @@ struct WhichDifferentUI: View {
                 .tint(.orange300)
                 .scaleEffect(x: 1, y: 2, anchor: .center)
             
-            // Süre ve mesaj
-            tvBodylineString(text: String(format: "%.2f", viewModel.timeCounter), color: .black)
+            // Süre
+            tvBodylineString(
+                text: String(format: "%.1f", viewModel.timeCounter),
+                color: viewModel.timeCounter < 3 ? .red : .black)
                 .padding(.top, 6)
-            tvBodyline(text: QuestionStringKeys.think_question, color: .gray)
             
-            // Soru başlığı kutusu
+            // Cevap Mesajı (Correct/Wrong)
+            Group {
+                if viewModel.answeredQuestion {
+                    Text(viewModel.isAnswerTrue ? "Correct!" : "Wrong Answer")
+                        .font(.headline)
+                        .foregroundColor(viewModel.isAnswerTrue ? .green : .red)
+                } else {
+                    Text(" ").font(.headline)
+                }
+            }
+            .padding(.top, 2)
+            
+            // Soru Başlığı
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.orange)
                 .overlay {
@@ -48,10 +60,9 @@ struct WhichDifferentUI: View {
                 }
                 .frame(maxWidth: 500, maxHeight: 100)
                 .padding(.horizontal, 24)
-                .background(Color.clear)
-                .padding(.top, 20)
+                .padding(.top, 10)
             
-            // 2x2 Görsel grid
+            // Izgara
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(Array(viewModel.currentOptions.enumerated()), id: \.offset) { idx, opt in
                     Button {
@@ -70,39 +81,31 @@ struct WhichDifferentUI: View {
                         .shadow(color: .gray.opacity(0.2), radius: 5, y: 2)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.12), lineWidth: 1)
+                                .stroke(viewModel.answeredQuestion && opt.isDifferent ? Color.green : Color.gray.opacity(0.12),
+                                        lineWidth: viewModel.answeredQuestion && opt.isDifferent ? 4 : 1)
                         )
                     }
                     .disabled(viewModel.answeredQuestion)
                 }
             }
             .padding(.top, 10)
-            .frame(maxWidth: .infinity)
-            .padding(.bottom)
+            .padding(.horizontal)
             
-            // Next / Finish / True-Wrong butonu
+            Spacer()
+            
+            // Alt Buton
             btnTextGradientInfinity(
                 action: { viewModel.nextQuestion() },
                 text: viewModel.questionNumber == viewModel.lastQuestionNumber
                     ? QuestionStringKeys.finish
-                    : (viewModel.answeredQuestion
-                       ? (viewModel.isAnswerTrue ? StringKey.true_answer : StringKey.wrong_answer)
-                       : QuestionStringKeys.next)
+                    : QuestionStringKeys.next
             )
             .disabled(!viewModel.answeredQuestion)
             .opacity(!viewModel.answeredQuestion ? 0.6 : 1.0)
             .padding(.horizontal, 64)
+            .padding(.bottom, 20)
         }
         .navigationBarHidden(true)
-        .sheet(isPresented: $showTimeSheet) {
-            VStack(spacing: 24) {
-                Text(QuestionStringKeys.question_time).font(.headline)
-                Button(StringKey.save) { showTimeSheet = false }
-                    .buttonStyle(.borderedProminent)
-            }
-            .padding()
-            .presentationDetents([.medium])
-        }
         .padding()
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
@@ -118,7 +121,6 @@ struct WhichDifferentUI: View {
         )
     }
 }
-
 #Preview {
     WhichDifferentUI().environmentObject(RouterFeed())
 }
