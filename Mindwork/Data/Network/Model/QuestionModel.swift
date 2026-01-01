@@ -47,4 +47,6 @@ enum QuestionType: String, Codable{
     case firefly_title
     case reflexGame
     case wordCube
+    case timing
+    case reverse_word
 }

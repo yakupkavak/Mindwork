@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct WordCubeUI: View {
-    
+
     @StateObject private var vm = WordCubeGameViewModel()
     @EnvironmentObject var router: RouterFeed
 
@@ -15,31 +15,35 @@ struct WordCubeUI: View {
         ZStack {
             Color(.systemBackground)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 24) {
-                
+
                 // Top bar
                 VStack(spacing: 6) {
                     Text("Word Cube")
                         .font(.headline)
-                    
+
                     Text("Level: \(vm.level) words")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    
+
                     Text("Score: \(vm.score)")
                         .font(.subheadline)
                         .foregroundColor(.orange)
-                    
+
                     ProgressView(
                         value: Double(vm.level - vm.minLevel + 1),
                         total: Double(vm.maxLevel - vm.minLevel + 1)
                     )
                     .tint(.orange)
                     .padding(.horizontal)
+
+                    Text(String(format: "%.2f", vm.elapsedTime))
+                        .font(.title3.monospacedDigit())
+                        .foregroundColor(.primary)
                 }
                 .padding(.top, 24)
-                
+
                 // Question area
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
@@ -50,23 +54,51 @@ struct WordCubeUI: View {
                                 endPoint: .trailing
                             )
                         )
-                    VStack(spacing: 4) {
+
+                    VStack(spacing: 8) {
                         Text(questionTitle)
                             .font(.headline)
                             .foregroundColor(.white)
-                        
-                        Text(questionSubtitle)
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
+
+                        // ✅ Subtitle rules updated exactly as you asked
+                        switch vmPhase {
+                        case .idle:
+                            Text("You will see \(vm.level) words one by one on the screen.")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+
+                            Text("Try to memorize the words in the correct order.")
+                                .font(.subheadline.bold())
+                                .foregroundColor(.white)
+
+                        case .showingWords:
+                            // Keep only "Watch the Words", remove subtitle
+                            EmptyView()
+
+                        case .recalling:
+                            Text("Type the words in the exact order you saw them.")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+
+                        case .result:
+                            Text(vm.feedbackMessage)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+
+                        case .gameOver:
+                            Text(vm.feedbackMessage)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+                        }
                     }
                     .multilineTextAlignment(.center)
                     .padding()
                 }
                 .frame(height: 110)
                 .padding(.horizontal)
-                
+
                 Spacer(minLength: 8)
-                
+
                 // Main content area (changes with phase)
                 Group {
                     switch vmPhase {
@@ -77,32 +109,41 @@ struct WordCubeUI: View {
                     case .result:
                         resultView
                     case .gameOver:
-                        gameOverView
+                        // ✅ Oyun ekranı arkada kalsın (popup üstte gelecek)
+                        resultView
                     }
                 }
                 .padding(.horizontal)
-                
+
                 Spacer()
-                
+
                 // Bottom buttons
                 if vmPhase == .result {
                     resultButtons
                         .padding(.horizontal)
                         .padding(.bottom, 24)
-                } else {
+                } else if vmPhase != .gameOver {
                     mainButton
                         .padding(.horizontal)
                         .padding(.bottom, 24)
                 }
             }
         }
+        // ✅ POPUP ARTIK GERÇEK OVERLAY (tam ekran üstüne biner)
+        .overlay {
+            if vm.showStatsPopup {
+                statsPopupOverlay
+                    .transition(.opacity.combined(with: .scale))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: vm.showStatsPopup)
     }
-    
+
     // Convenience
     private var vmPhase: WordCubeGameModel.Phase { vm.phase }
-    
+
     // MARK: - Titles
-    
+
     private var questionTitle: String {
         switch vmPhase {
         case .showingWords:
@@ -117,24 +158,9 @@ struct WordCubeUI: View {
             return "Get Ready"
         }
     }
-    
-    private var questionSubtitle: String {
-        switch vmPhase {
-        case .showingWords:
-            return "Try to remember the order carefully."
-        case .recalling:
-            return "Type the words in the exact order you saw them."
-        case .result:
-            return vm.feedbackMessage
-        case .gameOver:
-            return vm.feedbackMessage
-        case .idle:
-            return "You will see \(vm.level) words one by one on the screen."
-        }
-    }
-    
+
     // MARK: - Subviews
-    
+
     private var showingWordsView: some View {
         VStack(spacing: 16) {
             if vmPhase == .showingWords {
@@ -142,7 +168,7 @@ struct WordCubeUI: View {
                     .font(.system(size: 40, weight: .bold))
                     .foregroundColor(.purple)
                     .animation(.easeInOut, value: vm.displayedWord)
-                
+
                 Text("Words are being shown...")
                     .foregroundColor(.secondary)
             } else {
@@ -152,20 +178,20 @@ struct WordCubeUI: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     private var recallView: some View {
         ScrollView {
             VStack(spacing: 12) {
                 Text("Type the \(vm.level) words you saw, in the correct order.")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 ForEach(0..<vm.userInputs.count, id: \.self) { index in
                     HStack {
                         Text("\(index + 1).")
                             .frame(width: 24, alignment: .leading)
                             .foregroundColor(.secondary)
-                        
+
                         TextField("Word \(index + 1)", text: Binding(
                             get: { vm.userInputs[index] },
                             set: { vm.userInputs[index] = $0 }
@@ -178,17 +204,17 @@ struct WordCubeUI: View {
             }
         }
     }
-    
+
     private var resultView: some View {
         VStack(spacing: 16) {
             Text("Correct: \(vm.lastCorrectCount) / \(vm.currentWords.count)")
                 .font(.title3)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("Correct order:")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                
+
                 Text(vm.currentWords.joined(separator: " • "))
                     .font(.body)
                     .foregroundColor(.purple)
@@ -199,27 +225,63 @@ struct WordCubeUI: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
-    private var gameOverView: some View {
-        VStack(spacing: 16) {
-            Text("Game Over")
-                .font(.title2)
-            
-            Text(vm.feedbackMessage)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            Text("Final Score: \(vm.score) points")
-                .font(.title3)
-                .foregroundColor(.purple)
-                .padding(.top, 8)
+
+    // ✅ POPUP OVERLAY (tam ekran)
+    private var statsPopupOverlay: some View {
+        ZStack {
+            // arkaplan karartı
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    // İstersen tıklayınca kapatmayı istemiyorsun diye dokunmuyorum.
+                    // vm.showStatsPopup = false  (istersen açarız)
+                }
+
+            // popup kart
+            VStack(spacing: 16) {
+                Text("İstatistikler")
+                    .font(.title2.bold())
+
+                VStack(spacing: 12) {
+                    statRow(title: "Doğru", value: "\(vm.totalCorrect)")
+                    statRow(title: "Yanlış", value: "\(vm.totalWrong)")
+                    statRow(title: "Ortalama cevap", value: String(format: "%.2f sn", vm.averageResponseTime))
+                    statRow(title: "Doğruluk", value: String(format: "%.2f%%", vm.accuracyRate * 100))
+                }
+                .padding(.vertical, 8)
+
+                Button(action: { router.navigateToRoot() }) {
+                    Text("Ana ekran")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                }
+
+                Button(action: { vm.restartGameTapped() }) {
+                    Text("Yeniden oyna")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(20)
+                }
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color(.systemGray5))
+            )
+            .padding(.horizontal, 32)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     // MARK: - Buttons
-    
+
     private var mainButton: some View {
         Button(action: { vm.mainButtonTapped() }) {
             Text(mainButtonTitle)
@@ -240,7 +302,7 @@ struct WordCubeUI: View {
         .disabled(vmPhase == .showingWords)
         .opacity(vmPhase == .showingWords ? 0.7 : 1.0)
     }
-    
+
     private var mainButtonTitle: String {
         switch vmPhase {
         case .idle:
@@ -255,7 +317,7 @@ struct WordCubeUI: View {
             return "Restart Game"
         }
     }
-    
+
     private var resultButtons: some View {
         HStack(spacing: 12) {
             Button(action: { vm.endGameTapped() }) {
@@ -269,7 +331,7 @@ struct WordCubeUI: View {
                             .stroke(Color.orange, lineWidth: 2)
                     )
             }
-            
+
             Button(action: { vm.nextRoundTapped() }) {
                 Text("Next Round")
                     .font(.headline)
@@ -286,6 +348,16 @@ struct WordCubeUI: View {
                     .cornerRadius(20)
                     .shadow(radius: 4, y: 2)
             }
+        }
+    }
+
+    private func statRow(title: String, value: String) -> some View {
+        HStack {
+            Text("\(title):")
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .foregroundColor(.primary)
         }
     }
 }

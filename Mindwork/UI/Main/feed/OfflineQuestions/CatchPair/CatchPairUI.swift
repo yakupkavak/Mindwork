@@ -1,5 +1,6 @@
 import SwiftUI
 
+
 struct CatchPairUI: View {
     @StateObject var viewModel = CatchPairViewModel()
     @EnvironmentObject var router: RouterFeed
@@ -32,7 +33,9 @@ struct CatchPairUI: View {
                 .scaleEffect(x: 1,y: 2, anchor: .center)
 
             tvBodylineString(text: String(format: "%.2f", viewModel.timeCounter), color: .black).padding(.top)
-            tvBodyline(text: viewModel.preparingGame ? StringKey.showing_numbers : QuestionStringKeys.think_question, color: .gray)
+            if viewModel.preparingGame {
+                tvBodyline(text: StringKey.showing_numbers, color: .gray)
+            }
             if let isTrue = viewModel.isTrue {
                 tvBodyline(text: isTrue ? StringKey.true_answer : StringKey.wrong_answer, color: isTrue ? .green : .red)
             }

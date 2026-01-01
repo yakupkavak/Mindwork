@@ -42,6 +42,10 @@ struct BaseTabViewUI: View {
                         ReflexUI()
                     case .word_cube:
                         WordCubeUI()
+                    case .timing:
+                        TimingGameUI()
+                    case .reverse_word:
+                        ReverseWordUI()
                     }
                 }.tabbarVisibility(visibility: tabbarController.isVisible)
             }.tabItem {

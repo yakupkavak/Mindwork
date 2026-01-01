@@ -26,9 +26,32 @@ final class FirefliesGameViewModel: ObservableObject {
     @Published private(set) var lastRoundCorrect: Bool = false
     @Published private(set) var attemptsThisRound: Int = 0   // 0 or 1
     
+    // MARK: - Stats (for Game Over Popup)
+    
+    @Published private(set) var correctCount: Int = 0
+    @Published private(set) var wrongCount: Int = 0
+    @Published private(set) var totalAnswerTime: TimeInterval = 0
+    @Published private(set) var answerElapsedTime: TimeInterval = 0
+    
+    var totalAttempts: Int { correctCount + wrongCount }
+    
+    var averageAnswerTime: TimeInterval {
+        guard totalAttempts > 0 else { return 0 }
+        return totalAnswerTime / Double(totalAttempts)
+    }
+    
+    var accuracyPercent: Double {
+        guard totalAttempts > 0 else { return 0 }
+        return (Double(correctCount) / Double(totalAttempts)) * 100.0
+    }
+    
     // MARK: - Private Model
     
     private let model = FirefliesGameModel()
+    private var attemptStartTime: Date? = nil
+    private var answerTimerStart: Date? = nil
+    private var answerTimerCancellable: AnyCancellable? = nil
+    private var accumulatedAnswerTime: TimeInterval = 0
     
     // Expose some model configuration for the View
     var minLevel: Int { model.minLevel }
@@ -75,19 +98,30 @@ final class FirefliesGameViewModel: ObservableObject {
     }
     
     func endGameTapped() {
+        // Stop any running timer (optional)
+        attemptStartTime = nil
+        stopAnswerTimer()
+        
         phase = .gameOver
-        feedbackMessage = "You ended the game at level \(level).\nHighest level reached: \(maxLevelReached).\nYour final score is \(score)."
+        // feedbackMessage artık popup için şart değil ama dursun
+        feedbackMessage = "Game over."
+    }
+    
+    /// Popup'taki "Yeniden oyna" için
+    func restartFromPopup() {
+        restartGame()
     }
     
     // MARK: - Game Flow
     
     func startNewRound() {
-        sequence = model.generateSequence(length: level)
+        sequence = model.generateSequence(length: level, level: level)
         userSequence = []
         highlightedIndex = nil
         feedbackMessage = ""
         lastRoundCorrect = false
         attemptsThisRound = 0
+        attemptStartTime = nil
         phase = .idle
     }
     
@@ -95,13 +129,24 @@ final class FirefliesGameViewModel: ObservableObject {
         level = model.minLevel
         maxLevelReached = model.minLevel
         score = 0
+        
+        // Reset stats
+        correctCount = 0
+        wrongCount = 0
+        totalAnswerTime = 0
+        accumulatedAnswerTime = 0
+        answerElapsedTime = 0
+        stopAnswerTimer()
+        
         sequence = []
         userSequence = []
         highlightedIndex = nil
         feedbackMessage = ""
         lastRoundCorrect = false
         attemptsThisRound = 0
+        attemptStartTime = nil
         phase = .idle
+        
         startNewRound()
     }
     
@@ -110,6 +155,8 @@ final class FirefliesGameViewModel: ObservableObject {
         userSequence = []
         attemptsThisRound = 0
         lastRoundCorrect = false
+        attemptStartTime = nil
+        stopAnswerTimer()
         showSequenceStep(at: 0)
     }
     
@@ -132,17 +179,36 @@ final class FirefliesGameViewModel: ObservableObject {
                 guard let self else { return }
                 self.highlightedIndex = nil
                 self.phase = .waitingForInput
+                // Start timing when user can start input
+                self.attemptStartTime = Date()
+                self.startAnswerTimer()
             }
         }
     }
     
     private func checkAttempt() {
+        // Stop timing
+        let elapsed: TimeInterval = {
+            guard let start = attemptStartTime else { return 0 }
+            return Date().timeIntervalSince(start)
+        }()
+        totalAnswerTime += elapsed
+        attemptStartTime = nil
+        stopAnswerTimer()
+        
         let result = model.evaluateAttempt(
             sequence: sequence,
             userSequence: userSequence,
             currentLevel: level,
             attemptsUsed: attemptsThisRound
         )
+        
+        // Count correct/wrong (attempt-based)
+        if result.lastRoundCorrect {
+            correctCount += 1
+        } else {
+            wrongCount += 1
+        }
         
         // Apply result
         level = result.newLevel
@@ -161,7 +227,31 @@ final class FirefliesGameViewModel: ObservableObject {
             // One more attempt for same round
             attemptsThisRound += 1
             userSequence = []
+            // Restart timing for the second attempt
+            attemptStartTime = Date()
+            startAnswerTimer()
             // phase stays in .waitingForInput
         }
+    }
+
+    private func startAnswerTimer() {
+        guard answerTimerCancellable == nil else { return }
+        answerTimerStart = Date()
+        answerTimerCancellable = Timer.publish(every: 0.1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self, let start = self.answerTimerStart else { return }
+                self.answerElapsedTime = self.accumulatedAnswerTime + Date().timeIntervalSince(start)
+            }
+    }
+
+    private func stopAnswerTimer() {
+        if let start = answerTimerStart {
+            accumulatedAnswerTime += Date().timeIntervalSince(start)
+        }
+        answerTimerStart = nil
+        answerTimerCancellable?.cancel()
+        answerTimerCancellable = nil
+        answerElapsedTime = accumulatedAnswerTime
     }
 }

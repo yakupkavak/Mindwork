@@ -36,7 +36,19 @@ let gamesTitles: [QuestionLocalModel] = [
         title: QuestionStringKeys.reflex_title,
         foregroundColor: Color(hex: "#252617"),
         backgroundColor: Color(hex: "#BF8A49")
-    )
+    ),
+       QuestionLocalModel(
+           questionType: .timing,
+           title: QuestionStringKeys.timing_title,
+           foregroundColor: Color(hex: "#2B4C7E"),
+           backgroundColor: Color(hex: "#BFD7ED")
+       ),
+       QuestionLocalModel(
+           questionType: .reverse_word,
+           title: QuestionStringKeys.reverse_word_title,
+           foregroundColor: Color(hex: "#FFA44D"),
+           backgroundColor: Color(hex: "#F6C28B")
+        )
 ]
 
 let questionTitles: [QuestionLocalModel] = [
