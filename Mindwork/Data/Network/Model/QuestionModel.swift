@@ -49,4 +49,6 @@ enum QuestionType: String, Codable{
     case wordCube
     case timing
     case reverse_word
+    case missing_link
+    case pattern_game
 }

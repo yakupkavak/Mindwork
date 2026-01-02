@@ -1,16 +1,15 @@
 //
-//  TimingModel.swift
+//  TimingGameModel.swift
 //  Mindwork
 //
-//  Created by Sena Yıldız on 1.01.2026.
+//  Created by Cemre Bayer on 2.01.2026.
 //
-
 import SwiftUI
 
 enum TimingResult: String {
-    case perfect = "Mükemmel"
-    case good = "Başarılı"
-    case miss = "Başarısız"
+    case perfect = "Harika!"
+    case good = "Güzel"
+    case miss = "Kaçırdın!"
     
     var color: Color {
         switch self {

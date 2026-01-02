@@ -131,7 +131,7 @@ final class FindColorViewModel: BaseViewModel {
         percentageTruth = total > 0 ? (100 * Double(correctCount) / Double(total)) : 0
         gameOver = true
         
-        // Firebase Kayıt işlemleri... (Mevcut kodunuzdaki yapı)
+        // Firebase
     }
 
     private func updateProgress() {

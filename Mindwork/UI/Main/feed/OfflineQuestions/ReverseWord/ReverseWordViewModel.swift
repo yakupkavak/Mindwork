@@ -1,15 +1,9 @@
-//
-//  ReverseWordViewModel.swift
-//  ReverseWord
-//
-//  Created by Sena Yıldız on 21.12.2025.
-//
-
 import Combine
 import Foundation
 import SwiftUI
+import FirebaseFirestore
 
-final class ReverseWordViewModel: ObservableObject {
+final class ReverseWordViewModel: BaseViewModel { 
 
     enum Phase {
         case ready
@@ -21,61 +15,43 @@ final class ReverseWordViewModel: ObservableObject {
 
     // MARK: - Published (UI State)
     @Published var phase: Phase = .ready
-
     @Published var currentWord: String = ""
     @Published var isWordHidden: Bool = false
     @Published var userInput: String = ""
-
     @Published var levelLength: Int = 3
     @Published var score: Int = 0
-
     @Published var feedbackText: String = ""
     @Published var feedbackColor: Color = .green
-
     @Published var lastRoundPoints: Int? = nil
 
-    // ✅ Total time (keeps going across rounds, never resets until restart)
     @Published private(set) var totalElapsed: TimeInterval = 0
     @Published private(set) var timeProgress: CGFloat = 0.0
-
-    // ✅ Game over popup
     @Published var isStatsPopupPresented: Bool = false
 
-    // ✅ Stats
     @Published private(set) var correctCount: Int = 0
     @Published private(set) var wrongCount: Int = 0
 
     // MARK: - Config
     private let minLength = 3
     private let maxLength = 10
-
     private let wordDisplaySeconds: TimeInterval = 1.8
     private let speedThreshold: TimeInterval = 15.0
+    private let lastQuestionNumber = 10 // ✅ Soru sınırı eklendi
 
-    // ✅ Avoid repeating words too often
     private let recentMemoryPerLength = 6
     private var recentWordsByLength: [Int: [String]] = [:]
 
-    // MARK: - Internal
     private var showTimer: Timer?
     private var totalTimer: Timer?
     private var typingStartDate: Date?
-
-    // difficulty streaks
     private var correctStreak: Int = 0
     private var wrongStreak: Int = 0
-
-    // stats timing
     private var totalAnswerSeconds: TimeInterval = 0
     private var answeredCount: Int = 0
-
-    // total-time timer internals
     private var runningStartDate: Date?
 
     // MARK: - Computed for UI
-    var totalTimeText: String {
-        String(format: "%.2f", totalElapsed)
-    }
+    var totalTimeText: String { String(format: "%.2f", totalElapsed) }
 
     var averageAnswerSeconds: Double {
         guard answeredCount > 0 else { return 0.0 }
@@ -92,7 +68,6 @@ final class ReverseWordViewModel: ObservableObject {
 
     func startRound() {
         guard phase != .gameOver else { return }
-
         resetRoundUI()
 
         currentWord = pickNonRepeatingWord(length: levelLength)
@@ -101,23 +76,19 @@ final class ReverseWordViewModel: ObservableObject {
 
         showTimer?.invalidate()
         showTimer = Timer.scheduledTimer(withTimeInterval: wordDisplaySeconds, repeats: false) { [weak self] _ in
-            guard let self else { return }
+            guard let self = self else { return }
             self.isWordHidden = true
             self.phase = .typing
             self.typingStartDate = Date()
-            self.startTotalTimer() // ✅ start counting total time here
+            self.startTotalTimer()
         }
     }
 
     func submit() {
         guard phase == .typing else { return }
+        stopTotalTimer()
 
-        stopTotalTimer() // ✅ stop counting total time here
-
-        let trimmed = userInput
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-
+        let trimmed = userInput.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let correctAnswer = ReverseWordModel.reversed(currentWord).lowercased()
         let isCorrect = (trimmed == correctAnswer)
 
@@ -143,15 +114,39 @@ final class ReverseWordViewModel: ObservableObject {
             correctStreak = 0
         }
 
-        // ✅ 2 wrong in a row => GAME OVER
-        if wrongStreak >= 2 {
-            phase = .gameOver
-            isStatsPopupPresented = true
-            return
+        // ✅ Oyun Bitiş Kontrolü (2 Yanlış veya 10 Soru)
+        if wrongStreak >= 2 || (correctCount + wrongCount) >= lastQuestionNumber {
+            endGame()
+        } else {
+            updateDifficulty()
+            phase = .feedback
         }
+    }
 
-        updateDifficulty()
-        phase = .feedback
+    // MARK: - Firebase Save logic
+    private func endGame() {
+        phase = .gameOver
+        isStatsPopupPresented = true
+        
+        let total = Double(max(1, correctCount + wrongCount))
+        
+        // ✅ Firebase Kayıt İşlemi
+        getDataCall {
+            try await FirestorageManager.shared.saveGame(
+                gameData: GameStoreModel(
+                    successRate: Double(self.correctCount) / total,
+                    gameType: .reverse_word, // Enum'da bu tipin olduğundan emin olun
+                    date: Timestamp(date: Date()),
+                    averageTime: self.averageAnswerSeconds
+                )
+            )
+        } onSuccess: { _ in
+            print("ReverseWord oyunu başarıyla kaydedildi.")
+        } onLoading: {
+            // Yükleme durumu gerekirse burada yönetilebilir
+        } onError: { error in
+            print("Oyun kaydedilemedi: \(error?.localizedDescription ?? "Bilinmeyen hata")")
+        }
     }
 
     func nextRound() {
@@ -159,27 +154,22 @@ final class ReverseWordViewModel: ObservableObject {
         phase = .ready
     }
 
-    // ✅ Popup buttons
     func restartGame() {
-        // full reset including time + stats
         hardResetAll()
         isStatsPopupPresented = false
         phase = .ready
     }
 
     func goToMain() {
-        // app has one screen: behave like "back to main"
         hardResetAll()
         isStatsPopupPresented = false
         phase = .ready
     }
 
-    // MARK: - Helpers
-
+    // MARK: - Helpers (Timer & UI Reset)
     private func resetRoundUI() {
         showTimer?.invalidate()
         showTimer = nil
-
         userInput = ""
         feedbackText = ""
         isWordHidden = false
@@ -192,45 +182,35 @@ final class ReverseWordViewModel: ObservableObject {
         stopTotalTimer()
         totalElapsed = 0
         timeProgress = 0
-
         score = 0
         levelLength = minLength
-
         correctStreak = 0
         wrongStreak = 0
-
         correctCount = 0
         wrongCount = 0
         totalAnswerSeconds = 0
         answeredCount = 0
-
         recentWordsByLength = [:]
         currentWord = ""
     }
 
     private func updateDifficulty() {
-        // senin mevcut mantığın: 2 doğru => level +1, 2 yanlış => level -1
-        // ama artık 2 yanlış zaten game over, bu yüzden sadece 2 doğru yükseltecek.
         if correctStreak >= 2 {
             levelLength = min(levelLength + 1, maxLength)
             correctStreak = 0
         }
     }
 
-    // ✅ Total time timer (forward counting across rounds)
     private func startTotalTimer() {
         guard totalTimer == nil else { return }
         runningStartDate = Date()
 
         totalTimer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            guard let start = self.runningStartDate else { return }
-
+            guard let self = self, let start = self.runningStartDate else { return }
             let delta = Date().timeIntervalSince(start)
             self.runningStartDate = Date()
             self.totalElapsed += delta
 
-            // Visual mapping: 0..60 seconds fills the bar, then stays full.
             let maxVisual: TimeInterval = 60.0
             self.timeProgress = CGFloat(min(self.totalElapsed / maxVisual, 1.0))
         }
@@ -242,11 +222,9 @@ final class ReverseWordViewModel: ObservableObject {
         runningStartDate = nil
     }
 
-    // ✅ Avoid recent repeats
     private func pickNonRepeatingWord(length: Int) -> String {
         let list = ReverseWordModel.wordBankByLength[length] ?? (ReverseWordModel.wordBankByLength[minLength] ?? ["cat"])
         let recent = Set(recentWordsByLength[length] ?? [])
-
         let candidates = list.filter { !recent.contains($0) }
         let chosen = (candidates.randomElement() ?? list.randomElement() ?? "cat")
 
@@ -256,19 +234,15 @@ final class ReverseWordViewModel: ObservableObject {
             arr.removeFirst(arr.count - recentMemoryPerLength)
         }
         recentWordsByLength[length] = arr
-
         return chosen
     }
 
     private func computePoints(isCorrect: Bool, wordLength: Int, elapsed: TimeInterval) -> Int {
         guard isCorrect else { return 0 }
-
         let base = wordLength * 10
-
         if elapsed > speedThreshold { return base }
-
         let remaining = max(0.0, speedThreshold - elapsed)
-        let speedBonus = Int(remaining * 2.0) // max ~30 bonus
+        let speedBonus = Int(remaining * 2.0)
         return base + speedBonus
     }
 

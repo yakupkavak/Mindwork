@@ -46,6 +46,10 @@ struct BaseTabViewUI: View {
                         TimingGameUI()
                     case .reverse_word:
                         ReverseWordUI()
+                    case .pattern_game:
+                        PatternGameUI()
+                    case .missing_link:
+                        MissingLinkUI()
                     }
                 }.tabbarVisibility(visibility: tabbarController.isVisible)
             }.tabItem {

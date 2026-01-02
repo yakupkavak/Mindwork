@@ -493,6 +493,9 @@ struct Constants {
         static let word_cube_title = LocalizedStringKey("word_cube_title")
         static let timing_title = LocalizedStringKey("timing_title")
         static let reverse_word_title = LocalizedStringKey("reverse_word_title")
+        static let missing_link_title = LocalizedStringKey("missing_link_title")
+        static let pattern_game_title = LocalizedStringKey("pattern_game_title")
+
 
         static let philosophy_title = LocalizedStringKey("philosophy_title")
         static let firsts_title     = LocalizedStringKey("firsts_title")

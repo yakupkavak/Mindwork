@@ -10,20 +10,25 @@ import QuartzCore
 
 final class TimingGameViewModel: BaseViewModel {
     @Published var barPosition: CGFloat = 0.0
-    @Published var isMovingForward = true
-    @Published var gameResult: TimingResult? = nil
-    @Published var score = 0
-    @Published var level = 1
-    @Published var gameOver = false
-    
-    // İstatistikler (FindColor ile uyumlu)
-    @Published var correctCount: Int = 0
-    @Published var wrongCount: Int = 0
-    @Published var percentageTruth: Double = 0.0
-    
-    private var speed: CGFloat = 0.015
-    private let targetPosition: CGFloat = 0.5
-    private var displayLink: CADisplayLink?
+        @Published var isMovingForward = true
+        @Published var gameResult: TimingResult? = nil
+        @Published var score = 0
+        @Published var level = 1
+        @Published var gameOver = false
+        
+        @Published var questionNumber: Int = 1
+        @Published var questionProgress: Double = 0.1
+        @Published var answeredQuestion: Bool = false
+        
+        // İstatistikler
+        @Published var correctCount: Int = 0
+        @Published var wrongCount: Int = 0
+        @Published var percentageTruth: Double = 0.0
+        @Published var averageResponseTime: Double = 0.0 // UI'da beklenen isim
+        
+        private var speed: CGFloat = 0.015
+        private let targetPosition: CGFloat = 0.5
+        private var displayLink: CADisplayLink?
 
     override init() {
         super.init()

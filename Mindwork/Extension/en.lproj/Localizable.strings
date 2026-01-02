@@ -265,6 +265,8 @@ Invite your partner and begin crafting memories together 💫";
 "reflex_title" = "Reflex";
 "timing_title" = "Timing";
 "reverse_word_title" = "Reverse Word";
+"missing_link_title"= "Missing Link";
+"pattern_game_title"= "Pattern Game";
 
 // WHICH COLOR KEYS
 "which_color_white"      = "Which of the following is white";

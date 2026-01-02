@@ -5,99 +5,115 @@
 //  Created by Cemre Bayer on 28.12.2025.
 //
 
+import SwiftUICore
 import SwiftUI
 
 struct TimingGameUI: View {
     @StateObject var viewModel = TimingGameViewModel()
-    @EnvironmentObject var router: RouterFeed // Kendi router isminle değiştir (RouterFeed/MockRouter)
+    @EnvironmentObject var router: RouterFeed
 
     var body: some View {
         VStack {
-            // MARK: - Header (FindColor stili)
+            // Header
             HStack {
                 btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
                     router.navigateBack()
                 }
                 Spacer()
                 tvBodylineString(
-                    text: "Seviye: \(viewModel.level)",
+                    text: String(format: NSLocalizedString("question_number", comment: ""), viewModel.questionNumber),
                     color: .black
                 )
                 Spacer()
-                tvBodylineString(
-                    text: "Skor: \(viewModel.score)",
-                    color: .black
-                )
+                btnSystemIconTransparent(iconSystemName: "info.circle", color: .black) { }
             }
-            .padding(.horizontal)
+
+            // Progress Bar (Pattern Game ile aynı)
+            ProgressView(value: viewModel.questionProgress)
+                .padding(.top)
+                .tint(.blue)
+                .scaleEffect(x: 1, y: 2, anchor: .center)
 
             Spacer()
 
-            // MARK: - Oyun Alanı
-            VStack(spacing: 40) {
-                // Bilgi metni
-                tvBodylineString(text: "Tam ortada durdur!", color: .gray)
+            // Oyun Alanı
+            VStack(spacing: 50) {
+                Text("Tam merkezde durdur!")
+                    .font(.headline)
+                    .foregroundColor(.gray)
 
                 ZStack {
-                    // Arka plan çizgisi (Gri temizlendi/Modernleşti)
+                    // Ana Ray
                     Capsule()
-                        .fill(Color.black.opacity(0.1))
-                        .frame(height: 8)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(height: 12)
                     
-                    // Hedef noktası (Turuncu çizgi)
+                    // Hedef Alanı (Pattern Game kutuları gibi belirgin)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue.opacity(0.2))
+                        .frame(width: 40, height: 60)
+                    
+                    // Hedef Çizgisi
                     Rectangle()
-                        .fill(Color.orange)
-                        .frame(width: 4, height: 40)
-                    
-                    // Hareket eden top
+                        .fill(Color.blue)
+                        .frame(width: 3, height: 40)
+
+                    // Hareket Eden Obje
                     GeometryReader { geo in
                         Circle()
                             .fill(viewModel.gameResult?.color ?? .blue)
-                            .frame(width: 32, height: 32)
-                            .shadow(radius: 4)
-                            .offset(x: (geo.size.width - 32) * viewModel.barPosition)
+                            .frame(width: 35, height: 35)
+                            .shadow(color: .black.opacity(0.2), radius: 5)
+                            .offset(x: (geo.size.width - 35) * viewModel.barPosition)
                     }
-                    .frame(height: 32)
+                    .frame(height: 35)
                 }
-                .padding(.horizontal, 40)
-                
-                // Sonuç Metni
+                .padding(.horizontal, 30)
+
+                // Feedback Metni
                 if let result = viewModel.gameResult {
                     Text(result.rawValue)
-                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .font(.system(size: 40, weight: .black, design: .rounded))
                         .foregroundColor(result.color)
-                        .transition(.scale.combined(with: .opacity))
-                } else {
-                    Text(" ") // Layout bozulmasın diye boş alan
-                        .font(.largeTitle)
+                        .transition(.scale)
                 }
             }
 
             Spacer()
 
-            // MARK: - Kontrol Butonu (Tendria Degrade Stili)
-            btnTextGradientInfinity(
-                action: { viewModel.stopAndCheck() },
-                text: "DURDUR"
-            )
-            .disabled(viewModel.gameResult != nil)
-            .opacity(viewModel.gameResult != nil ? 0.6 : 1.0)
-            .padding(.horizontal, 64)
-            .padding(.bottom, 32)
+            // Kontrol Butonu
+            Button(action: { viewModel.stopAndCheck() }) {
+                Text(viewModel.answeredQuestion ? "BEKLEYİN..." : "ŞİMDİ!")
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(viewModel.answeredQuestion ? Color.gray : Color.blue)
+                    .cornerRadius(20)
+                    .shadow(radius: 5)
+            }
+            .disabled(viewModel.answeredQuestion)
+            .padding(.horizontal, 40)
+            .padding(.bottom, 50)
         }
+        .padding()
         .navigationBarHidden(true)
-        // MARK: - Kurumsal Alert Yapısı
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
-            titleKey: "Oyun Bitti!",
-            trueCount: "Başarılı Hamle: \(viewModel.correctCount)",
-            wrongCount: "Kaçırma: \(viewModel.wrongCount)",
-            averageAnswer: "Toplam Skor: \(viewModel.score)",
-            accuracy: "Doğruluk: %\(Int(viewModel.percentageTruth))",
-            acceptText: "Tekrar Oyna",
-            deniedText: "Ana Menü",
+            titleKey: StatsKey.title,
+            trueCount: StatsKey.trueCount(viewModel.correctCount),
+            wrongCount: StatsKey.wrongCount(viewModel.wrongCount),
+            averageAnswer: StatsKey.averageAnswer(seconds: viewModel.averageResponseTime),
+            accuracy: StatsKey.accuracy(percent: viewModel.percentageTruth),
+            acceptText: StringKey.start_again,
+            deniedText: StringKey.main_page,
             acceptFunc: { viewModel.resetGame() },
             deniedFunc: { router.navigateBack() }
         )
     }
 }
+
+#Preview {
+    TimingGameUI().environmentObject(RouterFeed())
+}
+

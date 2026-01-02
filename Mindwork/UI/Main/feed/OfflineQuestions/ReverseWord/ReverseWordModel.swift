@@ -8,20 +8,13 @@
 import Foundation
 
 struct ReverseWordModel {
-
+    // Kelime bankası [Harf Sayısı: [Kelimeler]]
     static let wordBankByLength: [Int: [String]] = [
-        3: [
-            "cat","sun","map","pen","cup","fog","ice","key","owl","box",
-            "dog","car","hat","run","toy","bat","pie","jam","bee","sky",
-            "fox","egg","gum","lid","oak","ink","fan","net","zip","ray"
-        ],
-        4: [
-            "game","note","wind","lamp","tree","book","milk","road","fish","time",
-            "door","star","rain","ship","ring","desk","snow","rock","sand","fire",
-            "gold","blue","pink","seed","wolf","bird","code","mint","base","hope"
-        ],
-        5: [
-            "apple","train","light","smile","stone","water","chair","bread","world","phone",
+        3: ["cat","sun","map","pen","cup","fog","ice","key","owl","box","dog","car","hat","run","toy","bat","pie","jam","bee","sky",
+            "fox","egg","gum","lid","oak","ink","fan","net","zip","ray"],
+        4:["game","note","wind","lamp","tree","book","milk","road","fish","time","door","star","rain","ship","ring","desk","snow","rock","sand","fire","gold","blue","pink","seed","wolf","bird","code","mint","base","hope"],
+        
+        5: ["apple","train","light","smile","stone","water","chair","bread","world","phone",
             "music","dream","magic","happy","smart","table","glass","beach","river","plant",
             "heart","sweet","fresh","brave","quiet","flame","candy","watch","grape","storm"
         ],
@@ -45,14 +38,25 @@ struct ReverseWordModel {
             "connection","calculator","dictionary","invitation","government","wonderful","community","foundation","motivation","developer",
             "algorithm","revolution","incredible","confidence","challenge","classroom","discovery","improving","smartphone","transport"
         ],
-        10: [
-            "basketball","friendship","technology","programming","imagination","motivation","celebration","photography","navigation","repetition",
+        10: ["basketball","friendship","technology","programming","imagination","motivation","celebration","photography","navigation","repetition",
             "collections","development","application","reflection","competition","information","environment","performance","conversation","generation",
             "enrichment","interesting","exploration","projection","calibration","inspection","interaction","presentation","arrangement","foundation"
         ]
     ]
 
+
     static func reversed(_ word: String) -> String {
         String(word.reversed())
     }
 }
+
+// Firebase için sonuç veri yapısı
+struct ReverseWordResult: Codable {
+    let score: Int
+    let correctCount: Int
+    let wrongCount: Int
+    let averageResponseTime: Double
+    let accuracy: Double
+    let date: Date
+}
+
