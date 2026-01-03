@@ -14,6 +14,7 @@ struct FeedUI: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+            
             DownSizedImageView(image: UIImage(named: "palmiye"),
                                size: CGSize(width: 200, height: 200)) { image in
                 image
@@ -111,7 +112,7 @@ struct FeedUI: View {
                         }
                     }
                 })*/
-        }.ignoresSafeArea().background(Color.feedBackground.opacity(0.8))
+        }.ignoresSafeArea().background(Color.feedBackground.opacity(0.2))
     }
     
     private func navigateGame(type: QuestionType?) {

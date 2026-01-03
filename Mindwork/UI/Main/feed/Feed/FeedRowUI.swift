@@ -21,7 +21,7 @@ struct FeedRowUI: View {
                 Text(":").foregroundStyle(.white).font(.system(size: 40,weight: .bold))
                     .offset(x: 25,y:-25)
             }.frame(maxWidth: .infinity, alignment: .trailing)
-            title.font(.custom("Mali-Bold", size: 20)).foregroundStyle(.white).padding(20).lineLimit(1).truncationMode(.tail)
+            title.font(.custom("Mali-Bold", size: 20)).foregroundStyle(.white).lineLimit(2).truncationMode(.tail).frame(height: 70)
         }.background(foregroundColor).frame(maxWidth: Width.screenFourtyTwoWidth).clipShape(RoundedRectangle(cornerRadius: 20))
     }
     private func getLocation() -> CGFloat{
