@@ -1,17 +1,20 @@
-import SwiftUI
+import Foundation
 import Combine
+import SwiftUI
+import FirebaseCore
+import FirebaseFirestore
 
 final class PatternGameViewModel: BaseViewModel {
     enum GameState { case ready, playing }
+    
     enum PatternItem: Equatable, Hashable {
         case number(Int)
         case color(Color)
-        case shape(String) // Yıldız, kare, daire vb.
+        case shape(String, Int)
         case placeholder
     }
 
     @Published var displaySequence: [PatternItem] = []
-    var fullSequence: [PatternItem] = []
     @Published var options: [PatternItem] = []
     @Published var questionNumber: Int = 1
     @Published var gameState: GameState = .ready
@@ -20,15 +23,18 @@ final class PatternGameViewModel: BaseViewModel {
     @Published var isTrue: Bool? = nil
     @Published var timeCounter: Double = 0.0
     
+    @Published var correctOption: PatternItem?
+    @Published var selectedOption: PatternItem?
+    
     @Published var correctCount: Int = 0
     @Published var wrongCount: Int = 0
-    var totalResponseTime: Double = 0.0
-    var percentageTruth: Double = 0.0
-    var averageResponseTime: Double = 0.0
+    @Published var percentageTruth: Double = 0.0
+    @Published var averageResponseTime: Double = 0.0
     
+    private var totalResponseTime: Double = 0.0
+    private var totalAnswered: Int = 0 // Kayıt için eklendi
     private var timer: Timer?
-    private var correctItem: PatternItem?
-    private var lastRuleType: Int = -1 // Aynı kuralın üst üste gelmemesi için
+    private var lastRuleType: Int = -1
     private var questionStartTime: Date?
     var questionProgress: Double { Double(questionNumber) / 10.0 }
 
@@ -38,110 +44,93 @@ final class PatternGameViewModel: BaseViewModel {
         correctCount = 0
         wrongCount = 0
         totalResponseTime = 0
+        totalAnswered = 0
         generateQuestion()
     }
 
     func generateQuestion() {
         answeredQuestion = false
         isTrue = nil
+        selectedOption = nil
         
-        // MARK: - Gelişmiş Kural Seti
-        var ruleType = Int.random(in: 0...5)
-        while ruleType == lastRuleType { ruleType = Int.random(in: 0...5) }
+        var ruleType = Int.random(in: 0...3)
+        while ruleType == lastRuleType { ruleType = Int.random(in: 0...3) }
         lastRuleType = ruleType
         
         var tempSequence: [PatternItem] = []
-        
+        let steps = 4
+
         switch ruleType {
-        case 0: // Matematiksel: 2x + 1 Kuralı
-            var current = Int.random(in: 1...4)
-            for _ in 0..<5 {
-                tempSequence.append(.number(current))
-                current = (current * 2) + 1
+        case 0: // Basit Artış
+            let inc = Int.random(in: 2...5)
+            var val = Int.random(in: 1...10)
+            for _ in 0..<steps {
+                tempSequence.append(.number(val))
+                val += inc
             }
-        case 1: // Fibonacci
-            var a = 1, b = 1
-            for _ in 0..<6 {
-                tempSequence.append(.number(a))
-                let next = a + b
-                a = b
-                b = next
+        case 1: // Kenar Sayısı Örüntüsü
+            let shapeInfo = [
+                (icon: "triangle.fill", edges: 3),
+                (icon: "square.fill", edges: 4),
+                (icon: "pentagon.fill", edges: 5),
+                (icon: "hexagon.fill", edges: 6)
+            ].randomElement()!
+            for i in 1...steps {
+                tempSequence.append(.shape(shapeInfo.icon, i))
             }
-        case 2: // Şekil Dizisi (Daire, Kare, Daire, Kare...)
-            let shapes = ["circle.fill", "square.fill"].shuffled()
-            for i in 0..<6 {
-                tempSequence.append(.shape(i % 2 == 0 ? shapes[0] : shapes[1]))
+        case 2: // Katlanarak Artış
+            var val = [2, 3, 5].randomElement()!
+            for _ in 0..<steps {
+                tempSequence.append(.number(val))
+                val *= 2
             }
-        case 3: // Azalan Kareler
-            let start = Int.random(in: 6...9)
-            for i in stride(from: start, to: start-5, by: -1) {
-                tempSequence.append(.number(i * i))
+        default: // Şekil Sayısı
+            let selectedIcon = ["star.fill", "heart.fill", "circle.fill"].randomElement()!
+            let startCount = Int.random(in: 1...2)
+            for i in 0..<steps {
+                tempSequence.append(.shape(selectedIcon, startCount + i))
             }
-        case 4: // Üçgensel Sayılar
-            for i in 1...6 {
-                tempSequence.append(.number((i * (i + 1)) / 2))
-            }
-        case 5: // Karışık Renk ve Sayı (Zor Seviye)
-            let colors: [Color] = [.red, .blue, .green]
-            let selectedColor = colors.randomElement()!
-            for i in 1...5 {
-                tempSequence.append(.color(selectedColor.opacity(Double(i) * 0.2)))
-            }
-        default:
-            tempSequence = [.number(2), .number(4), .number(6), .number(8)]
         }
 
-        fullSequence = tempSequence
-        let missingIndex = Int.random(in: 1..<fullSequence.count)
-        correctItem = fullSequence[missingIndex]
-        
-        displaySequence = fullSequence
+        let missingIndex = Int.random(in: 1..<tempSequence.count)
+        correctOption = tempSequence[missingIndex]
+        displaySequence = tempSequence
         displaySequence[missingIndex] = .placeholder
-        
-        options = generateOptions(correct: correctItem!)
+        options = generateUniqueOptions(correct: correctOption!, ruleType: ruleType)
         startTimer()
     }
 
-    private func generateOptions(correct: PatternItem) -> [PatternItem] {
-        var opts: [PatternItem] = [correct]
-        
-        switch correct {
-        case .number(let val):
-            while opts.count < 4 {
-                let off = Int.random(in: -10...10)
-                if off != 0 && val + off > 0 {
-                    let opt = PatternItem.number(val + off)
-                    if !opts.contains(opt) { opts.append(opt) }
-                }
+    private func generateUniqueOptions(correct: PatternItem, ruleType: Int) -> [PatternItem] {
+        var optsSet = Set<PatternItem>()
+        optsSet.insert(correct)
+        while optsSet.count < 4 {
+            switch correct {
+            case .number(let val):
+                let fake = val + [-2, -1, 1, 2, 5].randomElement()!
+                if fake > 0 && fake != val { optsSet.insert(.number(fake)) }
+            case .shape(let icon, let count):
+                let fakeCount = max(1, count + [-1, 1, 2].randomElement()!)
+                if fakeCount != count { optsSet.insert(.shape(icon, fakeCount)) }
+            default:
+                optsSet.insert(.number(Int.random(in: 1...20)))
             }
-        case .shape:
-            let allShapes = ["circle.fill", "square.fill", "triangle.fill", "star.fill", "hexagon.fill"]
-            for s in allShapes.shuffled() {
-                if opts.count < 4 {
-                    let opt = PatternItem.shape(s)
-                    if !opts.contains(opt) { opts.append(opt) }
-                }
-            }
-        case .color(let color):
-            while opts.count < 4 {
-                let opt = PatternItem.color(Color.random)
-                if !opts.contains(opt) { opts.append(opt) }
-            }
-        default: break
         }
-        return opts.shuffled()
+        return Array(optsSet).shuffled()
     }
 
     func checkAnswer(_ selected: PatternItem) {
         guard !answeredQuestion else { return }
+        self.selectedOption = selected
         timer?.invalidate()
         answeredQuestion = true
-        
-        if selected == correctItem {
+        totalAnswered += 1
+        totalResponseTime += timeCounter
+
+        if selected == correctOption {
             isTrue = true
             correctCount += 1
             if let index = displaySequence.firstIndex(of: .placeholder) {
-                displaySequence[index] = correctItem!
+                displaySequence[index] = correctOption!
             }
         } else {
             isTrue = false
@@ -160,28 +149,52 @@ final class PatternGameViewModel: BaseViewModel {
 
     private func startTimer() {
         timeCounter = 0.0
-        questionStartTime = Date()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
             self.timeCounter += 0.1
         }
     }
 
-    private func endGame() {
-        percentageTruth = (Double(correctCount) / 10.0) * 100
-        averageResponseTime = totalResponseTime / 10.0
-        gameOver = true
+    // MARK: - Firebase Entegrasyonu
+    func endGame() {
+        timer?.invalidate()
+        
+        // 1. Toplam soru sayısını güvenli bir şekilde alalım (genelde 10)
+        let totalQuestions = Double(max(1, totalAnswered))
+        let correctOnes = Double(correctCount)
+        
+        // 2. Başarı Oranı Hesaplama (Yüzdelik: 0-100 arası)
+        // Örn: (3 / 10) * 100 = 30.0
+        self.percentageTruth = (correctOnes / totalQuestions) * 100.0
+        
+        // 3. Ortalama Hız Hesaplama
+        self.averageResponseTime = totalResponseTime / totalQuestions
+        
+        self.gameOver = true
+        
+        // MARK: - Firebase Kayıt
+        getDataCall {
+            try await FirestorageManager.shared.saveGame(
+                gameData: GameStoreModel(
+                    // Firebase genelde başarıyı 0.0 ile 1.0 arasında bekler (Örn: 0.75)
+                    successRate: (correctOnes / totalQuestions),
+                    gameType: .pattern_game,
+                    date: Timestamp(date: Date()),
+                    averageTime: self.averageResponseTime
+                )
+            )
+        } onSuccess: { _ in
+            print("Veri başarıyla kaydedildi. Oran: %\(self.percentageTruth)")
+        } onLoading: {
+        } onError: { error in
+            if let error = error {
+                print("Hata oluştu: \(error.localizedDescription)")
+            }
+        }
     }
     
     func startAgain() {
         gameOver = false
         startGame()
-    }
-}
-
-// Yardımcı Renk Üretici
-extension Color {
-    static var random: Color {
-        return Color(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1))
     }
 }
