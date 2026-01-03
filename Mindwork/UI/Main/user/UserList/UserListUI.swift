@@ -8,42 +8,64 @@ struct UserListUI: View {
     @ObservedObject var userManager: UserManager
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: Height.smallHeight) {
-                VStack {
-                    KFImage.profile(urlString: viewModel.user.profileImageUrl, size: Height.xLargeHeight)
-                    
-                    Text(viewModel.user.name)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, Height.smallHeight)
-                Spacer()
-                // Menü Grupları
-                VStack(spacing: Height.xSmallHeight) {
-                    MenuSection(items: [
-                        MenuItem(icon: Icons.person, title: StringKey.personal_info,onClick:{ router.navigate(to: .userInfo)}),
-                    ])
-                    
-                    MenuSection(items: [
-                        MenuItem(icon: "questionmark.circle.fill", title: StringKey.change_password,onClick:{ router.navigate(to: .resetPassword)}),
-                        MenuItem(icon: "star.fill", title: StringKey.notifications,onClick:{ router.navigate(to: .userInfo)}),
-                        MenuItem(icon: "gearshape.fill", title: StringKey.settings,onClick:{ router.navigate(to: .userInfo)})
-                    ])
-                    Spacer()
-                    MenuSection(items: [
-                        MenuItem(icon: "arrow.left.square.fill", title: StringKey.log_out,onClick:{ viewModel.signOut()
-                        }),
-                    ])
-                }
-                .padding()
+        ZStack {
+            ZStack {
+                Image("mainbackground")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .ignoresSafeArea()
+                
+                Rectangle()
+                    .fill(.ultraThinMaterial.opacity(0.85))
+                    .ignoresSafeArea()
+                
+                Color.blue.opacity(0.1)
+                    .ignoresSafeArea()
             }
-        }.onAppear {
+            
+            ScrollView {
+                VStack(spacing: Height.smallHeight) {
+                    VStack {
+                        KFImage.profile(urlString: viewModel.user.profileImageUrl, size: Height.xLargeHeight)
+                        
+                        Text(viewModel.user.name)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.top, 20) // Üst boşluk
+                    
+                    Spacer()
+                    
+                    // Menü Grupları
+                    VStack(spacing: Height.xSmallHeight) {
+                        MenuSection(items: [
+                            MenuItem(icon: Icons.person, title: StringKey.personal_info, onClick: { router.navigate(to: .userInfo) }),
+                        ])
+                        
+                        MenuSection(items: [
+                            MenuItem(icon: "questionmark.circle.fill", title: StringKey.change_password, onClick: { router.navigate(to: .resetPassword) }),
+                            MenuItem(icon: "star.fill", title: StringKey.notifications, onClick: { router.navigate(to: .userInfo) }),
+                            MenuItem(icon: "gearshape.fill", title: StringKey.settings, onClick: { router.navigate(to: .userInfo) })
+                        ])
+                        
+                        Spacer()
+                        
+                        MenuSection(items: [
+                            MenuItem(icon: "arrow.left.square.fill", title: StringKey.log_out, onClick: { viewModel.signOut() }),
+                        ])
+                    }
+                    .padding()
+                    .padding(.bottom, 60) // Alt bar için ekstra boşluk (Bottom bar yüksekliğine göre ayarla)
+                }
+            }
+            .padding(.top, 64)
+        }
+        .onAppear {
             viewModel.fetchProfile()
         }
     }
 }
-
 // Menü İçin Yardımcı Yapılar
 struct MenuItem: Identifiable {
     let id = UUID()

@@ -8,6 +8,9 @@ import FirebaseFirestore
 struct CalendarUI: View {
     @StateObject private var vm = StatsViewModel()
     
+    // 🔥 TEK NOKTADAN YÖNETİLEN OPAKILIK SABİTİ
+    private let COMPONENT_OPACITY: Double = 0.7
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -31,7 +34,6 @@ struct CalendarUI: View {
                         gamesSection
                     }
                 }
-                .background(Color(.systemGroupedBackground))
                 .navigationBarTitleDisplayMode(.inline)
                 .refreshable {
                     await vm.reloadAsync()
@@ -39,7 +41,20 @@ struct CalendarUI: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
-            .background(Color(.systemGroupedBackground))
+            .background(ZStack {
+                Image("mainbackground")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .ignoresSafeArea()
+                
+                Rectangle()
+                    .fill(.ultraThinMaterial.opacity(0.85))
+                    .ignoresSafeArea()
+                
+                Color.blue.opacity(0.1)
+                    .ignoresSafeArea()
+            })
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 vm.startListening()
@@ -50,7 +65,6 @@ struct CalendarUI: View {
 
 // MARK: - Helper Components
 
-// Metin genişletme bileşeni (Artık formatlama yapmıyor, temiz metin alıyor)
 struct ExpandableText: View {
     let text: String
     let lineLimit: Int
@@ -120,12 +134,12 @@ private extension CalendarUI {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Hi, \(vm.user.name)")
-                        .font(.title3).fontWeight(.semibold)
+                        .font(.title3).fontWeight(.semibold).foregroundStyle(.white)
                     Text("👋")
                 }
                 Text("This is your progress report")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
             }
             Spacer()
             KFImage.profile(urlString: vm.user.profileImageUrl, size: 60)
@@ -150,7 +164,8 @@ private extension CalendarUI {
         }
         .padding(6)
         .background(
-            RoundedRectangle(cornerRadius: 14).fill(Color(.tertiarySystemBackground))
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.tertiarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
         )
     }
     
@@ -180,14 +195,18 @@ private extension CalendarUI {
             }
             
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(Color(.systemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
     
-    // 🔥 GÜNCELLENMİŞ AI KARTI (Formatlama düzeltildi)
+    // 🔥 GÜNCELLENMİŞ AI KARTI
     func aiFeedbackCard(insight: AIInsightModel) -> some View {
         let themeColor = colorForPattern(insight.patternType)
         
@@ -244,26 +263,22 @@ private extension CalendarUI {
             // --- İçerik ---
             VStack(alignment: .leading, spacing: 14) {
                 
-                // Başlık
                 Text(insight.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                     .lineLimit(2)
                 
-                // 🔥 Mesaj (ExpandableText içinde formatlama uyguluyoruz)
                 ExpandableText(
                     text: formatGameNames(insight.message),
                     lineLimit: 3
                 )
                 
-                // 🔥 İstatistik Rozeti (Burada formatlama EKSİKTİ, eklendi)
                 if let stat = insight.improvementStat {
                     HStack {
                         Image(systemName: "chart.line.uptrend.xyaxis")
                             .foregroundStyle(.green)
                         
-                        // BURASI DÜZELTİLDİ: formatGameNames()
                         Text(formatGameNames(stat))
                             .font(.footnote)
                             .fontWeight(.semibold)
@@ -275,7 +290,6 @@ private extension CalendarUI {
                     .cornerRadius(8)
                 }
                 
-                // 🔥 Aksiyon Kutusu (Formatlama uygulandı)
                 if let tip = insight.actionableTip {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "lightbulb.fill")
@@ -290,7 +304,6 @@ private extension CalendarUI {
                                 .foregroundStyle(.secondary)
                                 .textCase(.uppercase)
                             
-                            // BURASI DÜZELTİLDİ: formatGameNames()
                             Text(formatGameNames(tip))
                                 .font(.callout)
                                 .fontWeight(.medium)
@@ -312,15 +325,13 @@ private extension CalendarUI {
             }
             .padding(16)
         }
-        .background(Color(.systemBackground))
+        .background(Color(.systemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: Color.black.opacity(0.08), radius: 15, x: 0, y: 8)
         .padding(.vertical, 4)
     }
     
     // --- Helper Logic (Formatlama) ---
-    
-    // 🔥 Metin içindeki which_different gibi kelimeleri düzelten fonksiyon
     func formatGameNames(_ rawText: String) -> String {
         var processedText = rawText
         
@@ -337,11 +348,8 @@ private extension CalendarUI {
         ]
         
         for (key, value) in replacements {
-            // Önce tırnaklı versiyonları değiştir (AI bazen 'which_different' yazar)
             processedText = processedText.replacingOccurrences(of: "'\(key)'", with: "'\(value)'")
-            processedText = processedText.replacingOccurrences(of: "‘\(key)’", with: "‘\(value)’") // Akıllı tırnak
-            
-            // Sonra tırnaksız versiyonları değiştir
+            processedText = processedText.replacingOccurrences(of: "‘\(key)’", with: "‘\(value)’")
             processedText = processedText.replacingOccurrences(of: key, with: value)
         }
         
@@ -414,7 +422,10 @@ private extension CalendarUI {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.06), radius: 10, y: 6)
     }
     
@@ -430,7 +441,10 @@ private extension CalendarUI {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
     
@@ -474,7 +488,10 @@ private extension CalendarUI {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(8)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(.background))
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+                        )
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
                                 .stroke(b.earned ? Color.yellow.opacity(0.4) : Color.clear, lineWidth: 1)
@@ -485,7 +502,10 @@ private extension CalendarUI {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
     
@@ -505,7 +525,10 @@ private extension CalendarUI {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
     
@@ -536,7 +559,10 @@ private extension CalendarUI {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
     
@@ -572,12 +598,13 @@ private extension CalendarUI {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.secondarySystemBackground).opacity(COMPONENT_OPACITY)) // 🔥 OPAKILIK EKLENDİ
+        )
         .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
     }
-}
-
-private extension CalendarUI {
+    
     func formatMinutes(_ minutes: Int) -> String {
         if minutes < 60 { return "\(minutes) minute" }
         let h = minutes / 60
@@ -600,6 +627,7 @@ private extension CalendarUI {
     }
 }
 
+// MARK: - Preview
 struct StatsScreen_Previews: PreviewProvider {
     static var previews: some View {
         CalendarUI()
