@@ -13,16 +13,12 @@ struct WordCubeUI: View {
 
     var body: some View {
         ZStack {
-            // Arkaplan (Sabit kalır, scroll edilmez)
             Color(.systemBackground)
                 .ignoresSafeArea()
-
-            // Klavye yönetimi ve kaydırma için GeometryReader + ScrollView yapısı
             GeometryReader { geometry in
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 24) {
 
-                        // Top bar
                         VStack(spacing: 6) {
                             Text("Word Cube")
                                 .font(.headline)
@@ -237,15 +233,15 @@ struct WordCubeUI: View {
                     .font(.title2.bold())
 
                 VStack(spacing: 12) {
-                    statRow(title: "Doğru", value: "\(vm.totalCorrect)")
-                    statRow(title: "Yanlış", value: "\(vm.totalWrong)")
-                    statRow(title: "Ortalama cevap", value: String(format: "%.2f sn", vm.averageResponseTime))
-                    statRow(title: "Doğruluk", value: String(format: "%.2f%%", vm.accuracyRate * 100))
+                    statRow(title: "Correct", value: "\(vm.totalCorrect)")
+                    statRow(title: "Wrong", value: "\(vm.totalWrong)")
+                    statRow(title: "Avarage", value: String(format: "%.2f s.", vm.averageResponseTime))
+                    statRow(title: "Accuracy", value: String(format: "%.2f%%", vm.accuracyRate * 100))
                 }
                 .padding(.vertical, 8)
 
                 Button(action: { router.navigateToRoot() }) {
-                    Text("Ana ekran")
+                    Text("Main screen")
                         .font(.headline)
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity)
@@ -255,7 +251,7 @@ struct WordCubeUI: View {
                 }
 
                 Button(action: { vm.restartGameTapped() }) {
-                    Text("Yeniden oyna")
+                    Text("Play again")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
