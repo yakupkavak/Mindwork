@@ -226,8 +226,9 @@ Invite your partner and begin crafting memories together 💫";
 "text_turquoise"  = "Turquoise";
 "showing_numbers" = "Starting numbers";
 "start_remember" = "Start to memorize!";
+"catchpair_intro" = "Memorize the numbers shown below in order.";
+"start" = "Start";
 "loading" = "Loading...";
-
 //Numbers
 "number_zero"  = "Zero";
 "number_one"   = "One";
@@ -263,6 +264,10 @@ Invite your partner and begin crafting memories together 💫";
 "which_different" = "Which Different";
 "word_cube_title" = "Word Cube";
 "reflex_title" = "Reflex";
+"timing_title" = "Timing";
+"reverse_word_title" = "Reverse Word";
+"missing_link_title"= "Missing Link";
+"pattern_game_title"= "Pattern Game";
 
 // WHICH COLOR KEYS
 "which_color_white"      = "Which of the following is white";

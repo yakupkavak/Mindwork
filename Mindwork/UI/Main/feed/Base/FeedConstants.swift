@@ -36,7 +36,20 @@ let gamesTitles: [QuestionLocalModel] = [
         title: QuestionStringKeys.reflex_title,
         foregroundColor: Color(hex: "#252617"),
         backgroundColor: Color(hex: "#BF8A49")
-    )
+    ),
+       QuestionLocalModel(
+           questionType: .timing,
+           title: QuestionStringKeys.timing_title,
+           foregroundColor: Color(hex: "#2B4C7E"),
+           backgroundColor: Color(hex: "#BFD7ED")
+       ),
+       QuestionLocalModel(
+           questionType: .reverse_word,
+           title: QuestionStringKeys.reverse_word_title,
+           foregroundColor: Color(hex: "#FFA44D"),
+           backgroundColor: Color(hex: "#F6C28B")
+        )
+    
 ]
 
 let questionTitles: [QuestionLocalModel] = [
@@ -58,5 +71,19 @@ let questionTitles: [QuestionLocalModel] = [
         foregroundColor: Color(hex: "#A8BF56"),
         backgroundColor: Color(hex: "#658C6F")
     ),
+    QuestionLocalModel(
+        questionType: .pattern_game, //
+        title: QuestionStringKeys.pattern_game_title,
+        foregroundColor: Color(hex: "#3B7197"),
+        backgroundColor: Color(hex: "#A1E1FA") // Turuncu tonu
+    ),
+
+    QuestionLocalModel(
+        questionType: .missing_link, // Enum'a eklediğini varsayıyorum
+        title: QuestionStringKeys.missing_link_title,
+        foregroundColor: Color(hex: "#46A094"),
+        backgroundColor: Color(hex: "#C4E8C2") // İndigo/Mor tonu
+    )
+    
 ]
 

@@ -130,6 +130,14 @@ struct FeedUI: View {
             routerFeed.navigate(to: .reflex)
         case .wordCube:
             routerFeed.navigate(to: .word_cube)
+        case .timing:
+            routerFeed.navigate(to: .timing)
+        case .reverse_word:
+            routerFeed.navigate(to: .reverse_word)
+        case .pattern_game:
+            routerFeed.navigate(to: .pattern_game)
+        case .missing_link:
+            routerFeed.navigate(to: .missing_link)
         case .none:
             routerFeed.navigate(to: .colorful_words)
         }

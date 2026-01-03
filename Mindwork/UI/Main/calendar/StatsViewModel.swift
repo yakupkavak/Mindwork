@@ -225,6 +225,15 @@ final class StatsViewModel: BaseViewModel {
         case .catch_pair:      return "Catch Number"
         case .was_it_there:    return "Was It There?"
         case .firefly_title:   return "Firefly"
+        case .reflex:          return "Reflex"
+        case .missing_link:    return "Missing Link"
+        case .pattern_game:    return "Pattern Game"
+        case .timing:          return "Timing Game"
+        case .reverse_word:    return "Reverse Word"
+
+
+
+
         }
     }
     func reloadAsync() async {           // refreshable için async varyant
