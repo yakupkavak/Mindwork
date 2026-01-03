@@ -14,7 +14,7 @@ struct TimingGameUI: View {
                     }
                     Spacer()
                     tvBodylineString(
-                        text: "Seviye \(viewModel.level)",
+                        text: "Level \(viewModel.level)",
                         color: .black
                     )
                     Spacer()
@@ -22,6 +22,7 @@ struct TimingGameUI: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
+                
                 // Progress Bar
                 ProgressView(value: viewModel.timeLeft, total: 5.0)
                     .padding(.top)
@@ -40,7 +41,7 @@ struct TimingGameUI: View {
                     tvBodyline(text: LocalizedStringKey(result.rawValue), color: result.color)
                         .padding(.top, 4)
                 } else {
-                    Text("SKOR: \(viewModel.score)")
+                    Text("SCORE: \(viewModel.score)")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .padding(.top, 4)
@@ -49,9 +50,8 @@ struct TimingGameUI: View {
                 Spacer()
 
                 // MARK: Game Area
-                // MARK: Game Area
                 ZStack {
-                    // Arka Plan Kutusu
+                    // Background Box
                     RoundedRectangle(cornerRadius: 24)
                         .fill(Color.orange.opacity(0.1))
                         .frame(height: 160)
@@ -62,22 +62,20 @@ struct TimingGameUI: View {
                         let ballSize: CGFloat = 40
                         let lineSize: CGFloat = 6
                         
-                        // ÖNEMLİ: İkisini de aynı track üzerinde hesaplıyoruz
-                        // Böylece 0.5 değeri ikisi için de tam orta nokta olur.
                         let playableTrack = containerWidth - ballSize
                         
                         ZStack(alignment: .leading) {
                             Capsule()
-                            .fill(Color.black.opacity(0.08))
-                            .frame(height: 4)                // İnce bir hat
-                            .frame(maxWidth: .infinity)      // Tüm alanı kaplasın
+                                .fill(Color.black.opacity(0.08))
+                                .frame(height: 4)
+                                .frame(maxWidth: .infinity)
 
                             Rectangle()
                                 .fill(Color.orange)
                                 .frame(width: lineSize, height: 70)
                                 .offset(x: playableTrack * viewModel.targetPosition + (ballSize/2 - lineSize/2))
                             
-                            // Hareket Eden Top
+                            // Moving Ball
                             Circle()
                                 .fill(viewModel.gameResult == .miss ? .red : .orange)
                                 .frame(width: ballSize, height: ballSize)
@@ -96,7 +94,7 @@ struct TimingGameUI: View {
                         action: {
                             viewModel.stopAndCheck()
                         },
-                        text: viewModel.answeredQuestion ? "BEKLEYİN" : "DURDUR"
+                        text: viewModel.answeredQuestion ? "PLEASE WAIT" : "STOP"
                     )
                     .disabled(!viewModel.isGameStarted || viewModel.answeredQuestion)
                     .opacity((!viewModel.isGameStarted || viewModel.answeredQuestion) ? 0.6 : 1.0)
@@ -116,9 +114,9 @@ struct TimingGameUI: View {
                             .font(.system(size: 70))
                             .foregroundColor(.orange)
                         
-                        tvBodylineString(text: "NASIL OYNANIR?", color: .black)
+                        tvBodylineString(text: "HOW TO PLAY?", color: .black)
                         
-                        Text("Top turuncu çizginin tam üzerine geldiğinde DURDUR butonuna bas.\n\nIskalarsan veya süren biterse oyun biter!")
+                        Text("Press the STOP button when the ball is exactly over the orange line.\n\nIf you miss or run out of time, the game is over!")
                             .font(.body)
                             .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
@@ -128,7 +126,7 @@ struct TimingGameUI: View {
                             action: {
                                 withAnimation { viewModel.startGame() }
                             },
-                            text: "OYUNU BAŞLAT"
+                            text: "START GAME"
                         )
                         .padding(.horizontal, 64)
                     }
@@ -153,6 +151,7 @@ struct TimingGameUI: View {
         )
     }
 }
+
 #Preview {
     TimingGameUI().environmentObject(RouterFeed())
 }

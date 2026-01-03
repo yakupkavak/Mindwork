@@ -210,7 +210,7 @@ struct FirefliesUI: View {
                 .background(Color.black.opacity(0.08))
                 .clipShape(Capsule())
 
-            Text("Süre: \(formatTimerSeconds(vm.answerElapsedTime))")
+            Text("Time: \(formatTimerSeconds(vm.answerElapsedTime))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -298,28 +298,27 @@ struct FirefliesUI: View {
                 .onTapGesture { }
             
             VStack(spacing: 18) {
-                Text("İstatistikler")
+                Text("Statistics")
                     .font(.title3.weight(.semibold))
                     .foregroundColor(.black)
                 
                 VStack(spacing: 14) {
-                    Text("Doğru: \(vm.correctCount)")
-                    Text("Yanlış: \(vm.wrongCount)")
+                    Text("Correct: \(vm.correctCount)")
+                    Text("Wrong: \(vm.wrongCount)")
                     
-                    Text("Ortalama cevap: \(formatSeconds(vm.averageAnswerTime)) sn")
+                    Text("Avg. Answer: \(formatSeconds(vm.averageAnswerTime)) s")
                     
-                    Text("Doğruluk: \(formatPercent(vm.accuracyPercent))")
+                    Text("Accuracy: \(formatPercent(vm.accuracyPercent))")
                 }
                 .font(.system(size: 18, weight: .regular))
                 .foregroundColor(.black.opacity(0.85))
                 
                 VStack(spacing: 12) {
                     Button {
-                       
                         showStatsPopup = false
                         router.navigateToRoot()
                     } label: {
-                        Text("Ana ekran")
+                        Text("Home Screen")
                             .font(.headline)
                             .foregroundColor(.blue)
                             .frame(maxWidth: .infinity)
@@ -332,7 +331,7 @@ struct FirefliesUI: View {
                         showStatsPopup = false
                         vm.restartFromPopup()
                     } label: {
-                        Text("Yeniden oyna")
+                        Text("Play Again")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -353,19 +352,19 @@ struct FirefliesUI: View {
     
     private func formatSeconds(_ value: TimeInterval) -> String {
         let nf = NumberFormatter()
-        nf.locale = Locale(identifier: "tr_TR")
+        nf.locale = Locale(identifier: "en_US")
         nf.minimumFractionDigits = 2
         nf.maximumFractionDigits = 2
-        return nf.string(from: NSNumber(value: value)) ?? "0,00"
+        return nf.string(from: NSNumber(value: value)) ?? "0.00"
     }
     
     private func formatPercent(_ value: Double) -> String {
         let nf = NumberFormatter()
-        nf.locale = Locale(identifier: "tr_TR")
+        nf.locale = Locale(identifier: "en_US")
         nf.minimumFractionDigits = 2
         nf.maximumFractionDigits = 2
-        let s = nf.string(from: NSNumber(value: value)) ?? "0,00"
-        return "%\(s)"
+        let s = nf.string(from: NSNumber(value: value)) ?? "0.00"
+        return "\(s)%"
     }
 
     private func formatTimerSeconds(_ value: TimeInterval) -> String {

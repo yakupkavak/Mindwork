@@ -14,7 +14,7 @@ struct MissingLinkUI: View {
                     router.navigateBack()
                 }
                 Spacer()
-                Text("SORU \(viewModel.questionNumber) / 10").font(.headline)
+                Text("QUESTION \(viewModel.questionNumber) / 10").font(.headline)
                 Spacer()
                 Image(systemName: "brain").opacity(0)
             }
@@ -23,13 +23,13 @@ struct MissingLinkUI: View {
                 .padding(.top)
                 .tint(.orange)
 
-            // Timer ve Feedback
+            // Timer and Feedback
             VStack(spacing: 8) {
                 Text(String(format: "%.2f", viewModel.timeCounter))
                     .font(.system(.body, design: .monospaced))
                 
                 if let isTrue = viewModel.isTrue {
-                    Text(isTrue ? "HARİKA!" : "ÜZGÜNÜM!")
+                    Text(isTrue ? "EXCELLENT!" : "INCORRECT!")
                         .font(.headline).bold()
                         .foregroundColor(isTrue ? .green : .red)
                 } else {
@@ -38,7 +38,7 @@ struct MissingLinkUI: View {
             }
             .padding(.top)
 
-            // Oyun Alanı
+            // Game Area
             ZStack {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.gray.opacity(0.05))
@@ -57,10 +57,10 @@ struct MissingLinkUI: View {
             }
             .padding(.top, 20)
 
-            // Seçenekler
+            // Options
             VStack(spacing: 15) {
                 if !viewModel.preparingGame {
-                    Text("Hangi nesne eksik?").font(.caption).bold().foregroundColor(.orange)
+                    Text("Which object is missing?").font(.caption).bold().foregroundColor(.orange)
                     HStack(spacing: 15) {
                         ForEach(viewModel.options, id: \.self) { option in
                             Button(action: { viewModel.checkAnswer(selected: option) }) {
@@ -87,10 +87,10 @@ struct MissingLinkUI: View {
         .navigationBarHidden(true)
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
-            titleKey: LocalizedStringKey("Statistics"), // Dönüşüm eklendi
+            titleKey: LocalizedStringKey("Statistics"),
             trueCount: LocalizedStringKey("Correct: \(viewModel.correctCount)"),
             wrongCount: LocalizedStringKey("Wrong: \(viewModel.wrongCount)"),
-            averageAnswer: LocalizedStringKey(String(format: "Average response: %.2f sn", viewModel.averageResponseTime)),
+            averageAnswer: LocalizedStringKey(String(format: "Average response: %.2f s", viewModel.averageResponseTime)),
             accuracy: LocalizedStringKey(String(format: "Accuracy: %.2f%%", viewModel.percentageTruth)),
             acceptText: LocalizedStringKey("Start again"),
             deniedText: LocalizedStringKey("Main Screen"),
@@ -99,16 +99,16 @@ struct MissingLinkUI: View {
         )
     }
 
-    // Doğru/Yanlış Renk Mantığı
+    // Correct/Wrong Color Logic
     private func getBorderColor(for option: String) -> Color {
         guard viewModel.answeredQuestion else { return Color.orange.opacity(0.2) }
         
-        // Kural 1: Doğru cevap her zaman yeşil yanar
+        // Rule 1: Correct answer always glows green
         if option == viewModel.getMissingItem() {
             return .green
         }
         
-        // Kural 2: Eğer yanlış şık seçildiyse o kırmızı yanar
+        // Rule 2: If the wrong option was selected, it glows red
         if option == viewModel.selectedOption && option != viewModel.getMissingItem() {
             return .red
         }
@@ -117,6 +117,9 @@ struct MissingLinkUI: View {
     }
 }
 
+#Preview {
+    MissingLinkUI().environmentObject(RouterFeed())
+}
 #Preview {
     MissingLinkUI().environmentObject(RouterFeed())
 }

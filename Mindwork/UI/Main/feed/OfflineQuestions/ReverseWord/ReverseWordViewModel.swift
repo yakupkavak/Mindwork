@@ -3,7 +3,7 @@ import Foundation
 import SwiftUI
 import FirebaseFirestore
 
-final class ReverseWordViewModel: BaseViewModel { 
+final class ReverseWordViewModel: BaseViewModel {
 
     enum Phase {
         case ready
@@ -150,8 +150,8 @@ final class ReverseWordViewModel: BaseViewModel {
     }
 
     func nextRound() {
-        resetRoundUI()
-        phase = .ready
+        guard phase == .feedback else { return }
+        startRound()
     }
 
     func restartGame() {

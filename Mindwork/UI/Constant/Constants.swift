@@ -471,6 +471,11 @@ struct Constants {
         static let memory_description = LocalizedStringKey("memory_description")
         static let focus_title = LocalizedStringKey("focus_title")
         static let focus_description = LocalizedStringKey("focus_description")
+        static let attention_focus_title = LocalizedStringKey("attention_focus_title")
+        static let attention_focus_description = LocalizedStringKey("attention_focus_description")
+        static let logic_title = LocalizedStringKey("logic_title")
+        static let logic_description = LocalizedStringKey("logic_description")
+
         static let place_time_title = LocalizedStringKey("place_time_title")
         static let place_time_description = LocalizedStringKey("place_time_description")
         

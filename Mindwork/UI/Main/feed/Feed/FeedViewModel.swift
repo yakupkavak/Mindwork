@@ -14,6 +14,7 @@ class FeedViewModel: BaseViewModel {
     // UI-de gösterilecek listeler
     @Published var questionList = questionTitles
     @Published var gameList     = gamesTitles
+    @Published var logicList = logicQuestionTitles
     
     // Aktif oturum (dinleyici buna göre ayarlanır)
     @Published var session: GameSessionModel?

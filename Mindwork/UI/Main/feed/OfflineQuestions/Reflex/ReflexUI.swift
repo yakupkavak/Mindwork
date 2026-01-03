@@ -8,7 +8,7 @@ struct ReflexUI: View {
     var body: some View {
         ZStack {
             VStack(spacing: 20) {
-                // MARK: - Header (Pattern Game Stili)
+                // MARK: - Header
                 HStack {
                     btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
                         router.navigateBack()
@@ -17,7 +17,7 @@ struct ReflexUI: View {
                     Spacer()
                     
                     VStack(spacing: 2) {
-                        Text("SKOR").font(.caption2).bold().foregroundColor(.secondary)
+                        Text("SCORE").font(.caption2).bold().foregroundColor(.secondary)
                         Text("\(vm.score)").font(.title2).bold()
                     }
                     
@@ -29,9 +29,9 @@ struct ReflexUI: View {
                 }
                 .padding(.horizontal)
 
-                // MARK: - Hedef Kartı
+                // MARK: - Target Card
                 VStack(spacing: 12) {
-                    Text("DOKUNULACAK RENK")
+                    Text("COLOR TO TAP")
                         .font(.system(size: 11, weight: .black))
                         .foregroundColor(.secondary)
                         .tracking(2)
@@ -46,12 +46,11 @@ struct ReflexUI: View {
                                 .fill(vm.targetColor.color.opacity(0.12))
                         )
                 }
-                // Geri sayım sırasında hedef rengin görünmesi için opacity ayarlandı
                 .opacity(vm.gameState == .ready ? 0.0 : 1.0)
 
                 Spacer()
 
-                // MARK: - Oyun Alanı
+                // MARK: - Game Area
                 ZStack {
                     Circle()
                         .fill(vm.currentColor.color.opacity(0.2))
@@ -61,12 +60,11 @@ struct ReflexUI: View {
                     Circle()
                         .fill(vm.currentColor.color)
                         .frame(width: 200, height: 200)
-                        .scaleEffect(circleScale) // Basma efekti
+                        .scaleEffect(circleScale)
                         .shadow(color: vm.currentColor.color.opacity(0.3), radius: 15)
                         .onTapGesture {
                             if vm.gameState == .running {
                                 triggerHaptic()
-                                // İçe çökme efekti
                                 withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.4)) {
                                     circleScale = 0.85
                                 }
@@ -86,7 +84,7 @@ struct ReflexUI: View {
                     }
                 }
 
-                Text(vm.gameState == .countdown ? "HAZIRLAN..." : vm.message)
+                Text(vm.gameState == .countdown ? "GET READY..." : vm.message)
                     .font(.footnote).bold()
                     .foregroundColor(.gray)
                     .frame(height: 40)
@@ -96,7 +94,7 @@ struct ReflexUI: View {
             .padding(.vertical)
             .blur(radius: vm.gameState == .ready ? 10 : 0)
 
-            // MARK: - "Nasıl Oynanır?" Giriş Ekranı
+            // MARK: - "How to Play?" Intro Screen
             if vm.gameState == .ready {
                 Color.white.opacity(0.95).ignoresSafeArea()
                 
@@ -106,35 +104,35 @@ struct ReflexUI: View {
                         .foregroundColor(.orange)
                     
                     VStack(spacing: 15) {
-                        Text("NASIL OYNANIR?")
+                        Text("HOW TO PLAY?")
                             .font(.title2).bold()
                         
-                        Text("Ekranda değişen renkler arasından\nhedef rengi yakaladığında dokun.")
+                        Text("Tap when you catch the target color\namong the changing colors on the screen.")
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
                         
-                        Text("Yanlış renge basarsan oyun biter!")
+                        Text("Game ends if you tap the wrong color!")
                             .font(.footnote)
                             .foregroundColor(.red.opacity(0.8))
                     }
                     
                     btnTextGradientInfinity(action: {
                         vm.startGame()
-                    }, text: "OYUNU BAŞLAT")
+                    }, text: "START GAME")
                     .padding(.horizontal, 64)
                 }
             }
         }
-        .navigationBarHidden(true) // Sistem back tuşunu tamamen gizler
+        .navigationBarHidden(true)
         .customAnswerAlert(
             isPresented: $vm.gameOver,
-            titleKey: LocalizedStringKey("Oyun Bitti"),
-            trueCount: LocalizedStringKey("Doğru: \(vm.correctCount)"),
+            titleKey: LocalizedStringKey("Game Over"),
+            trueCount: LocalizedStringKey("Correct: \(vm.correctCount)"),
             wrongCount: LocalizedStringKey("\(vm.message)"),
-            averageAnswer: LocalizedStringKey(String(format: "Hızın: %.2f sn", vm.averageResponseTime)),
-            accuracy: LocalizedStringKey("Skor: \(vm.score)"),
-            acceptText: LocalizedStringKey("Yeniden Dene"),
-            deniedText: "Ana Ekran",
+            averageAnswer: LocalizedStringKey(String(format: "Speed: %.2f s", vm.averageResponseTime)),
+            accuracy: LocalizedStringKey("Score: \(vm.score)"),
+            acceptText: LocalizedStringKey("Try Again"),
+            deniedText: "Main Screen",
             acceptFunc: { vm.startGame() },
             deniedFunc: { router.navigateBack() }
         )

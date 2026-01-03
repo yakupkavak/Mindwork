@@ -7,13 +7,13 @@ struct PatternGameUI: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Header (Soru Sayacı)
+                // Header (Question Counter)
                 HStack {
                     btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
                         router.navigateBack()
                     }
                     Spacer()
-                    Text(LocalizedStringKey("SORU \(viewModel.questionNumber) / 10"))
+                    Text(LocalizedStringKey("QUESTION \(viewModel.questionNumber) / 10"))
                         .font(.subheadline).bold()
                     Spacer()
                     btnSystemIconTransparent(iconSystemName: "ellipsis.circle", color: .black) { }
@@ -25,23 +25,23 @@ struct PatternGameUI: View {
                     .tint(.orange)
                     .padding(.horizontal, 20)
 
-                // Timer ve Geri Bildirim
+                // Timer and Feedback
                 VStack(spacing: 5) {
                     Text(String(format: "%.2f", viewModel.timeCounter))
                         .font(.system(.body, design: .monospaced))
                     
                     if let isTrue = viewModel.isTrue {
-                        Text(isTrue ? "MÜKEMMEL!" : "TEKRAR DENE!")
+                        Text(isTrue ? "EXCELLENT!" : "TRY AGAIN!")
                             .font(.headline).bold()
                             .foregroundColor(isTrue ? .green : .red)
                     } else {
-                        Text("Eksik parçayı sence hangisi tamamlar?")
+                        Text("Which one completes the missing part?")
                             .font(.caption).foregroundColor(.gray)
                     }
                 }
                 .padding(.top, 15)
 
-                // Soru Alanı
+                // Question Area
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
                         .fill(Color.orange.opacity(0.05))
@@ -58,7 +58,7 @@ struct PatternGameUI: View {
 
                 Spacer()
 
-                // Seçenekler
+                // Options
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     ForEach(viewModel.options, id: \.self) { item in
                         Button(action: {
@@ -69,7 +69,7 @@ struct PatternGameUI: View {
                                 .frame(height: 100)
                                 .overlay(PatternItemView(item: item))
                                 .overlay(
-                                    // Doğru/Yanlış Çerçeve Geri Bildirimi
+                                    // Correct/Wrong Frame Feedback
                                     RoundedRectangle(cornerRadius: 20)
                                         .stroke(getBorderColor(for: item), lineWidth: 4)
                                 )
@@ -89,19 +89,19 @@ struct PatternGameUI: View {
         .navigationBarHidden(true)
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
-            titleKey: LocalizedStringKey("MindWorks Tamamlandı"),
-            trueCount: LocalizedStringKey("Doğru: \(viewModel.correctCount)"),
-            wrongCount: LocalizedStringKey("Yanlış: \(viewModel.wrongCount)"),
-            averageAnswer: LocalizedStringKey(String(format: "Hız: %.2f sn", viewModel.averageResponseTime)),
-            accuracy: LocalizedStringKey(String(format: "Başarı: %%.0f", viewModel.percentageTruth)),
-            acceptText: LocalizedStringKey("Yeniden Başla"),
-            deniedText: LocalizedStringKey("Kapat"),
+            titleKey: LocalizedStringKey("MindWorks Completed"),
+            trueCount: LocalizedStringKey("Correct: \(viewModel.correctCount)"),
+            wrongCount: LocalizedStringKey("Wrong: \(viewModel.wrongCount)"),
+            averageAnswer: LocalizedStringKey(String(format: "Speed: %.2f sec", viewModel.averageResponseTime)),
+            accuracy: LocalizedStringKey(String(format: "Accuracy: %%.0f", viewModel.percentageTruth)),
+            acceptText: LocalizedStringKey("Restart"),
+            deniedText: LocalizedStringKey("Close"),
             acceptFunc: { viewModel.startAgain() },
             deniedFunc: { router.navigateBack() }
         )
     }
 
-    // Doğru şık yeşil, yanlış seçilen kırmızı
+    // Correct option green, wrong selected red
     private func getBorderColor(for item: PatternGameViewModel.PatternItem) -> Color {
         guard viewModel.answeredQuestion else { return .clear }
         
@@ -124,18 +124,18 @@ struct PatternGameUI: View {
                     .font(.system(size: 90)).foregroundColor(.orange)
                 
                 VStack(spacing: 12) {
-                    Text("NASIL OYNANIR?").font(.title2).bold()
+                    Text("HOW TO PLAY?").font(.title2).bold()
                     VStack(alignment: .leading, spacing: 10) {
-                        instructionRow(icon: "1.circle.fill", text: "Önce dizideki sayıların veya şekillerin artış mantığını çöz.")
-                        instructionRow(icon: "2.circle.fill", text: "Şekillerin sayısına veya kenar sayılarına dikkat et.")
-                        instructionRow(icon: "3.circle.fill", text: "Soru işareti yerine gelecek doğru öğeyi aşağıdan seç.")
+                        instructionRow(icon: "1.circle.fill", text: "First, figure out the logic behind the numbers or shapes in the sequence.")
+                        instructionRow(icon: "2.circle.fill", text: "Pay attention to the number of shapes or their number of sides.")
+                        instructionRow(icon: "3.circle.fill", text: "Select the correct item from below to replace the question mark.")
                     }
                     .padding(.horizontal, 30)
                 }
 
                 btnTextGradientInfinity(action: {
                     withAnimation { viewModel.startGame() }
-                }, text: "OYUNA BAŞLA").padding(.horizontal, 64)
+                }, text: "START GAME").padding(.horizontal, 64)
             }
         }
     }
@@ -193,4 +193,3 @@ struct PatternItemView: View {
 #Preview {
     PatternGameUI().environmentObject(RouterFeed())
 }
-

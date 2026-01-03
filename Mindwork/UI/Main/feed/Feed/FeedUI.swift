@@ -37,6 +37,7 @@ struct FeedUI: View {
             
             ScrollView{
                 // Subjects bölümü
+//Memory
                 SubjectsView(title: QuestionStringKeys.memory_title, description: QuestionStringKeys.memory_description).frame(maxWidth: .infinity,alignment: .leading)
                 ScrollView(.horizontal, showsIndicators: false){
                     HStack(spacing: 16){
@@ -51,7 +52,8 @@ struct FeedUI: View {
                     }
                 }.padding(.bottom)
                 // Games bölümü
-                SubjectsView(title: QuestionStringKeys.focus_title, description: QuestionStringKeys.focus_description).frame(maxWidth: .infinity,alignment: .leading)
+//Attention & Focus
+                SubjectsView(title: QuestionStringKeys.attention_focus_title, description: QuestionStringKeys.attention_focus_description).frame(maxWidth: .infinity,alignment: .leading)
                 ScrollView(.horizontal, showsIndicators: false){
                     HStack(spacing: 16){
                         ForEach(viewModel.gameList){ game in
@@ -64,11 +66,11 @@ struct FeedUI: View {
                         }
                     }
                 }
-                
-                SubjectsView(title: QuestionStringKeys.place_time_title, description: QuestionStringKeys.place_time_description).frame(maxWidth: .infinity,alignment: .leading)
+//Logic
+                SubjectsView(title: QuestionStringKeys.logic_title, description: QuestionStringKeys.logic_description).frame(maxWidth: .infinity,alignment: .leading)
                 ScrollView(.horizontal, showsIndicators: false){
                     HStack(spacing: 16){
-                        ForEach(viewModel.gameList){ game in
+                        ForEach(viewModel.logicList){ game in
                             Button {
                                 navigateGame(type: game.questionType)
                             } label: {
