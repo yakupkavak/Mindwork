@@ -140,7 +140,7 @@ final class StatsViewModel: BaseViewModel {
 
         categories = [
             .init(name: "Memory",       icon: "brain.head.profile",
-                  progress: clamp(Double(countTypes(filtered, [.was_it_there, .which_different])) / 10.0),
+                  progress: clamp(Double(countTypes(filtered, [.which_different])) / 10.0),
                   levelXP: (min(120, Int(totalMinutes * 1.1)), 120)),
             .init(name: "Focus",        icon: "scope",
                   progress: clamp(Double(countTypes(filtered, [.colorful_words, .catch_pair])) / 10.0),
@@ -223,17 +223,12 @@ final class StatsViewModel: BaseViewModel {
         case .which_different: return "Which One is Different"
         case .colorful_words:  return "Colorful Words"
         case .catch_pair:      return "Catch Number"
-        case .was_it_there:    return "Was It There?"
         case .firefly_title:   return "Firefly"
         case .reflex:          return "Reflex"
         case .missing_link:    return "Missing Link"
         case .pattern_game:    return "Pattern Game"
         case .timing:          return "Timing Game"
         case .reverse_word:    return "Reverse Word"
-
-
-
-
         }
     }
     func reloadAsync() async {           // refreshable için async varyant

@@ -176,10 +176,8 @@ struct DownSizedImageView<Content: View>: View {
             }
         }.onAppear {
             guard downsizedImageView == nil else { return }
-            //Dynamic image changes
             createDownsizedImage(image: image)
-        }.onChange(of: image) { oldValue, newValue in
-            guard oldValue != newValue else { return }
+        }.onChange(of: image) { newValue in
             createDownsizedImage(image: newValue)
         }
     }

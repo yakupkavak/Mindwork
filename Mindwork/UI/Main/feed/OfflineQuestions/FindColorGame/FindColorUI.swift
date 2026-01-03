@@ -97,7 +97,7 @@ struct FindColorUI: View {
         .padding()
         .navigationBarHidden(true)
         .onAppear { updateOffsets(animated: false) }
-        .onChange(of: viewModel.uiTick) { _, _ in updateOffsets(animated: true) }
+        .onChange(of: viewModel.uiTick) { _ in updateOffsets(animated: true) }
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
             titleKey: StatsKey.title,

@@ -15,7 +15,6 @@ final class RouterFeed: ObservableObject {
         case catch_pair
         case firefly_title
         case colorful_words
-        case was_it_there
         case which_different
         case reflex
         case word_cube

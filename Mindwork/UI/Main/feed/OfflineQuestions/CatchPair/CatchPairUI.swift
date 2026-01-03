@@ -83,10 +83,8 @@ struct CatchPairUI: View {
             .presentationDetents([.medium])
         }
         .padding()
-        // EKRANA GELİNCE ilk konumları ata
         .onAppear { updateOffsets(animated: false) }
-        // HER SANİYE artan sayaç değiştikçe akıcı hareket et
-        .onChange(of: viewModel.uiTick) { oldValue, newValue in
+        .onChange(of: viewModel.uiTick) { newValue in
             updateOffsets(animated: true)
         }.customAnswerAlert(
             isPresented: $viewModel.gameOver,

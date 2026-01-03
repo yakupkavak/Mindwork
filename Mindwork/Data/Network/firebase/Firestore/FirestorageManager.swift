@@ -131,28 +131,6 @@ class FirestorageManager {
         try await addDocument(documentRef: eventReference, value: gameData)
     }
     
-    func configureFcmToken(){
-        guard let userMail = AuthManager.shared.getUserMail() else { return }
-        
-        Messaging.messaging().token(){token,error in
-            if let fcmToken = token{
-                let userKey = userMail + KeychainKeys.FCM_TOKEN
-                let storedToken = KeychainHelper.shared.getToken(key: userKey)
-                if(storedToken == fcmToken){
-                    print("key aynı kaydedilmedi")
-                }else{
-                    let userKey = userMail + KeychainKeys.FCM_TOKEN
-                    KeychainHelper.shared.saveToken(fcmToken, key: userKey)
-                    self.saveTokenToFirestore(token: fcmToken)
-                    print("key kaydedildi")
-                }
-            }
-            if let error = error{
-                print("error ->", error.localizedDescription)
-            }
-        }
-    }
-    
     func configureUserLanguage(userID: String,preferLanguage: String? = nil){
         guard let preferLanguage = preferLanguage else {
             //DEFAULT USERS LANGUAGE
@@ -346,6 +324,26 @@ class FirestorageManager {
             .getDocuments()
         
         return try snap.documents.map { try $0.data(as: GameStoreModel.self) }
+    }
+    
+    func configureFcmToken(){
+        guard let userMail = AuthManager.shared.getUserMail() else { return }
+        
+        Messaging.messaging().token(){token,error in
+            if let fcmToken = token{
+                let userKey = userMail + KeychainKeys.FCM_TOKEN
+                let storedToken = KeychainHelper.shared.getToken(key: userKey)
+                if(storedToken == fcmToken){
+                }else{
+                    let userKey = userMail + KeychainKeys.FCM_TOKEN
+                    KeychainHelper.shared.saveToken(fcmToken, key: userKey)
+                    self.saveTokenToFirestore(token: fcmToken)
+                }
+            }
+            if let error = error{
+                print("error ->", error.localizedDescription)
+            }
+        }
     }
     
     func updateProfile(name: String, surname: String, email: String?, phoneNumber: String?) async throws {

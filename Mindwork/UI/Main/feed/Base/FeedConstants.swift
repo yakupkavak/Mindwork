@@ -60,12 +60,6 @@ let questionTitles: [QuestionLocalModel] = [
         backgroundColor: Color(hex: "#252617")
     ),
     QuestionLocalModel(
-        questionType: .was_it_there,
-        title: QuestionStringKeys.was_it_there,
-        foregroundColor: Color(hex: "#607EA6"),
-        backgroundColor: Color(hex: "#253759")
-    ),
-    QuestionLocalModel(
         questionType: .which_different,
         title: QuestionStringKeys.which_different,
         foregroundColor: Color(hex: "#A8BF56"),

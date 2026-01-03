@@ -34,8 +34,6 @@ struct BaseTabViewUI: View {
                         CatchPairUI()
                     case .firefly_title:
                         FirefliesUI()
-                    case .was_it_there:
-                        EmptyView()
                     case .which_different:
                         WhichDifferentUI()
                     case .reflex:

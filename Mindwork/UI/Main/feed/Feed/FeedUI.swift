@@ -116,8 +116,6 @@ struct FeedUI: View {
     
     private func navigateGame(type: QuestionType?) {
         switch type {
-        case .was_it_there:
-            routerFeed.navigate(to: .was_it_there)
         case .which_different:
             routerFeed.navigate(to: .which_different)
         case .colorful_words:

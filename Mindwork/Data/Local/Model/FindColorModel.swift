@@ -17,6 +17,7 @@ struct FindColorAnswerModel{
     var optionText: LocalizedStringKey
     var isTrue: Bool
 }
+
 let askCatchNumber: [CatchNumberQuestion] = [
     CatchNumberQuestion(questionTitle: StringKey.one_before, beforeNumber: 1),
     CatchNumberQuestion(questionTitle: StringKey.two_before, beforeNumber: 2),
@@ -51,13 +52,13 @@ struct CatchNumberQuestion{
 
 let findColorQuestionList: [FindColorModel] = [
     
-    // which_color_blue (12 adet)
+    // which_color_white
     FindColorModel(
         questionTitle: FindColorStringKeys.which_color_white,
         options: [
             FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_red, isTrue: true),
             FindColorAnswerModel(optionColor: .black, optionText: FindColorStringKeys.text_white, isTrue: false),
-            FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_black, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_black, isTrue: false), // Gray yerine Blue yapıldı
             FindColorAnswerModel(optionColor: .yellow, optionText: FindColorStringKeys.text_gray, isTrue: false)
         ]
     ),
@@ -77,7 +78,7 @@ let findColorQuestionList: [FindColorModel] = [
         options: [
             FindColorAnswerModel(optionColor: .black, optionText: FindColorStringKeys.text_white, isTrue: true),
             FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_black, isTrue: false),
-            FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_gray, isTrue: false),
+            FindColorAnswerModel(optionColor: .green, optionText: FindColorStringKeys.text_gray, isTrue: false), // Gray yerine Green yapıldı
             FindColorAnswerModel(optionColor: .orange, optionText: FindColorStringKeys.text_brown, isTrue: false)
         ]
     ),
@@ -96,7 +97,7 @@ let findColorQuestionList: [FindColorModel] = [
         questionTitle: FindColorStringKeys.which_color_gray,
         options: [
             FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_black, isTrue: true),
-            FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_gray, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_gray, isTrue: false), // White yerine Blue yapıldı
             FindColorAnswerModel(optionColor: .red, optionText: FindColorStringKeys.text_white, isTrue: false),
             FindColorAnswerModel(optionColor: .yellow, optionText: FindColorStringKeys.text_purple, isTrue: false)
         ]
@@ -116,7 +117,7 @@ let findColorQuestionList: [FindColorModel] = [
         questionTitle: FindColorStringKeys.which_color_darkgray,
         options: [
             FindColorAnswerModel(optionColor: Color(red: 0.2, green: 0.2, blue: 0.2), optionText: FindColorStringKeys.text_white, isTrue: true),
-            FindColorAnswerModel(optionColor: Color(red: 0.85, green: 0.85, blue: 0.85), optionText: FindColorStringKeys.text_darkgray, isTrue: false),
+            FindColorAnswerModel(optionColor: .orange, optionText: FindColorStringKeys.text_darkgray, isTrue: false), // LightGray yerine Orange yapıldı
             FindColorAnswerModel(optionColor: .black, optionText: FindColorStringKeys.text_gray, isTrue: false),
             FindColorAnswerModel(optionColor: .yellow, optionText: FindColorStringKeys.text_black, isTrue: false)
         ]
@@ -126,7 +127,7 @@ let findColorQuestionList: [FindColorModel] = [
         options: [
             FindColorAnswerModel(optionColor: Color(red: 0.2, green: 0.2, blue: 0.2), optionText: FindColorStringKeys.text_pink, isTrue: true),
             FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_darkgray, isTrue: false),
-            FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_lightgray, isTrue: false),
+            FindColorAnswerModel(optionColor: .red, optionText: FindColorStringKeys.text_lightgray, isTrue: false), // White yerine Red yapıldı
             FindColorAnswerModel(optionColor: .orange, optionText: FindColorStringKeys.text_white, isTrue: false)
         ]
     ),
@@ -136,8 +137,8 @@ let findColorQuestionList: [FindColorModel] = [
         questionTitle: FindColorStringKeys.which_color_lightgray,
         options: [
             FindColorAnswerModel(optionColor: Color(red: 0.85, green: 0.85, blue: 0.85), optionText: FindColorStringKeys.text_black, isTrue: true),
-            FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_lightgray, isTrue: false),
-            FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_white, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_lightgray, isTrue: false), // White yerine Blue yapıldı
+            FindColorAnswerModel(optionColor: .red, optionText: FindColorStringKeys.text_white, isTrue: false),  // Gray yerine Red yapıldı
             FindColorAnswerModel(optionColor: .brown, optionText: FindColorStringKeys.text_gray, isTrue: false)
         ]
     ),
@@ -147,7 +148,7 @@ let findColorQuestionList: [FindColorModel] = [
             FindColorAnswerModel(optionColor: Color(red: 0.85, green: 0.85, blue: 0.85), optionText: FindColorStringKeys.text_purple, isTrue: true),
             FindColorAnswerModel(optionColor: Color(red: 0.2, green: 0.2, blue: 0.2), optionText: FindColorStringKeys.text_lightgray, isTrue: false),
             FindColorAnswerModel(optionColor: .orange, optionText: FindColorStringKeys.text_black, isTrue: false),
-            FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_brown, isTrue: false)
+            FindColorAnswerModel(optionColor: .green, optionText: FindColorStringKeys.text_brown, isTrue: false) // White yerine Green yapıldı
         ]
     ),
     
@@ -371,7 +372,7 @@ let findColorQuestionList: [FindColorModel] = [
         ]
     ),
     
-    // --- WHICH TEXT (no green/blue text questions to avoid repeats) ---
+    // --- WHICH TEXT ---
     
     // 33) TEXT WHITE
     FindColorModel(
@@ -379,7 +380,7 @@ let findColorQuestionList: [FindColorModel] = [
         options: [
             FindColorAnswerModel(optionColor: .red, optionText: FindColorStringKeys.text_white, isTrue: true),
             FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_black, isTrue: false),
-            FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_gray, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_gray, isTrue: false), // Gray yerine Blue yapıldı
             FindColorAnswerModel(optionColor: .yellow, optionText: FindColorStringKeys.text_purple, isTrue: false)
         ]
     ),
@@ -409,7 +410,7 @@ let findColorQuestionList: [FindColorModel] = [
         options: [
             FindColorAnswerModel(optionColor: .orange, optionText: FindColorStringKeys.text_darkgray, isTrue: true),
             FindColorAnswerModel(optionColor: .black, optionText: FindColorStringKeys.text_gray, isTrue: false),
-            FindColorAnswerModel(optionColor: .white, optionText: FindColorStringKeys.text_lightgray, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_lightgray, isTrue: false), // White yerine Blue yapıldı
             FindColorAnswerModel(optionColor: .pink, optionText: FindColorStringKeys.text_black, isTrue: false)
         ]
     ),
@@ -418,7 +419,7 @@ let findColorQuestionList: [FindColorModel] = [
         questionTitle: FindColorStringKeys.which_text_lightgray,
         options: [
             FindColorAnswerModel(optionColor: .red, optionText: FindColorStringKeys.text_lightgray, isTrue: true),
-            FindColorAnswerModel(optionColor: .gray, optionText: FindColorStringKeys.text_white, isTrue: false),
+            FindColorAnswerModel(optionColor: .blue, optionText: FindColorStringKeys.text_white, isTrue: false), // Gray yerine Blue yapıldı
             FindColorAnswerModel(optionColor: .black, optionText: FindColorStringKeys.text_darkgray, isTrue: false),
             FindColorAnswerModel(optionColor: .yellow, optionText: FindColorStringKeys.text_gray, isTrue: false)
         ]

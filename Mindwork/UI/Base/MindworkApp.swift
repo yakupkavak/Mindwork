@@ -10,8 +10,10 @@ import SwiftUI
 @main
 struct MindworkApp: App {
     
-    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) var delegate
+    //MARK: - Properties
     
+    @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
+    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) var delegate
     @StateObject private var routerTask = RouterMemory()
     @StateObject private var routerUser = RouterUserInfo()
     @StateObject private var routerFeed = RouterFeed()
@@ -23,8 +25,12 @@ struct MindworkApp: App {
     var body: some Scene {
         WindowGroup {
             if authManager.isSigned {
-                BaseTabViewUI().installToast(position: .bottom).environmentObject(routerTask).environmentObject(routerUser).environmentObject(routerFeed).onAppear {
-                    UIApplication.shared.addTapGestureRecognizer()
+                if hasCompletedOnboarding {
+                    BaseTabViewUI().installToast(position: .bottom).environmentObject(routerTask).environmentObject(routerUser).environmentObject(routerFeed).onAppear {
+                        UIApplication.shared.addTapGestureRecognizer()
+                    }
+                }else {
+                    OnboardingUI()
                 }
             } else {
                 SignContainerUI().installToast(position: .bottom).onAppear {
