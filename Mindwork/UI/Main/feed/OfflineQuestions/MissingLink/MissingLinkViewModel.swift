@@ -1,46 +1,35 @@
-//
-//  MissingLinkViewModel.swift
-//  Mindwork
-//
-//  Created by Cemre Bayer on 2.01.2026.
-//
-
 import SwiftUI
 import Combine
 import FirebaseFirestore
 
 final class MissingLinkViewModel: BaseViewModel {
-    // MARK: - Faz ve Ayarlar
     private enum Phase { case showing, quiz, finished }
     private var phase: Phase = .showing
     
     private let lastQuestionNumber = 10
-    private let showDurationSeconds = 4 // Nesnelerin ekranda kalma süresi
+    private let showDurationSeconds = 4
     
-    // MARK: - Published Değişkenler (UI için)
     @Published var timeCounter: Double = 0.0
     @Published var uiTick: Int = 0
     @Published var questionNumber = 1 { didSet { updateProgress() } }
     @Published var questionProgress = 0.1
-    @Published var questionTitle: LocalizedStringKey = StringKey.showing_numbers // Veya kendi StringKey'in
+    @Published var questionTitle: LocalizedStringKey = "Nesneleri aklında tut!"
     @Published var isTrue: Bool? = nil
     @Published var gameOver = false
     @Published var preparingGame = true
     @Published var answeredQuestion = false
+    @Published var selectedOption: String? = nil // Görsel geri bildirim için
 
-    // Oyun Nesneleri
-    @Published var displayItems: [String] = [] // Izgarada görünen emojiler
-    @Published var options: [String] = []      // Seçenek butonları
+    @Published var displayItems: [String] = []
+    @Published var options: [String] = []
     private var missingItem: String = ""
     
-    // MARK: - İstatistikler
     @Published var correctCount: Int = 0
     @Published var wrongCount: Int = 0
     @Published var averageResponseTime: Double = 0.0
     @Published var percentageTruth: Double = 0.0
     private var totalResponseTime: Double = 0.0
     
-    // MARK: - Veri Havuzu
     private let allItems = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍒", "🍑", "🥭", "🍍", "🥥", "🥑", "🥦"]
     private var gameTimer = Timer()
     private var uiTimer = Timer()
@@ -51,28 +40,26 @@ final class MissingLinkViewModel: BaseViewModel {
         startUiTimer()
     }
 
-    // MARK: - Oyun Mantığı
     func setupNewLevel() {
         phase = .showing
         preparingGame = true
         answeredQuestion = true
         isTrue = nil
         uiTick = 0
+        selectedOption = nil
         
-        // Seviyeye göre zorluk (Nesne sayısını artır)
         let count = min(allItems.count - 4, 3 + (questionNumber / 2))
         let selected = allItems.shuffled().prefix(count).map { String($0) }
         
         missingItem = selected.randomElement()!
         displayItems = selected
         
-        // Yanlış şıkları hazırla
         var opts = [missingItem]
         let remainingPool = allItems.filter { !selected.contains($0) }.shuffled()
         opts.append(contentsOf: remainingPool.prefix(3))
         options = opts.shuffled()
         
-        questionTitle = "Nesneleri aklında tut!" // LocalizedStringKey yapabilirsin
+        questionTitle = "Nesneleri aklında tut!"
     }
 
     private func startQuizPhase() {
@@ -81,7 +68,6 @@ final class MissingLinkViewModel: BaseViewModel {
         answeredQuestion = false
         timeCounter = 0
         
-        // Kayıp nesneyi listeden çıkar
         withAnimation {
             displayItems.removeAll { $0 == missingItem }
             questionTitle = "Hangi nesne kayboldu?"
@@ -91,6 +77,7 @@ final class MissingLinkViewModel: BaseViewModel {
 
     func checkAnswer(selected: String) {
         guard phase == .quiz, !answeredQuestion else { return }
+        self.selectedOption = selected
         stopGameTimer()
         answeredQuestion = true
         
@@ -118,30 +105,33 @@ final class MissingLinkViewModel: BaseViewModel {
         }
     }
 
+    func getMissingItem() -> String { missingItem }
+
     private func endGame() {
-            phase = .finished
-            let total = Double(max(1, correctCount + wrongCount))
-            percentageTruth = (Double(correctCount) / total) * 100
-            gameOver = true
-            
-            // Firebase Kayıt kısmını bu şekilde güncelle:
-            getDataCall {
-                try await FirestorageManager.shared.saveGame(
-                    gameData: GameStoreModel(
-                        successRate: Double(self.correctCount) / total,
-                        gameType: .missing_link,
-                        date: Timestamp(date: Date()),
-                        averageTime: self.averageResponseTime
-                    )
+        phase = .finished
+        let total = Double(max(1, correctCount + wrongCount))
+        percentageTruth = (Double(correctCount) / 10.0) * 100
+        gameOver = true
+        
+        getDataCall {
+            try await FirestorageManager.shared.saveGame(
+                gameData: GameStoreModel(
+                    successRate: Double(self.correctCount) / 10.0,
+                    gameType: .missing_link,
+                    date: Timestamp(date: Date()),
+                    averageTime: self.averageResponseTime
                 )
-            } onSuccess: { _ in
-                print("Missing Link oyunu başarıyla kaydedildi.")
-            } onLoading: {
-                // Yüklenme durumunda yapılacaklar (opsiyonel)
-            } onError: { error in
-                print("Kayıt hatası: \(error?.localizedDescription ?? "Bilinmeyen hata")")
+            )
+        } onSuccess: { _ in
+            print("Kaydedildi.")
+        } onLoading: {
+            // Bu kısım eksik olduğu için hata veriyordu
+        } onError: { error in
+            if let error = error {
+                print("Hata: \(error.localizedDescription)")
             }
         }
+    }
 
     func startAgain() {
         questionNumber = 1
@@ -152,16 +142,13 @@ final class MissingLinkViewModel: BaseViewModel {
         setupNewLevel()
     }
 
-    // MARK: - Timers & Helpers
     private func startUiTimer() {
         uiTimer.invalidate()
         uiTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             if self.phase == .showing {
                 self.uiTick += 1
-                if self.uiTick >= self.showDurationSeconds {
-                    self.startQuizPhase()
-                }
+                if self.uiTick >= self.showDurationSeconds { self.startQuizPhase() }
             }
         }
         RunLoop.main.add(uiTimer, forMode: .common)
