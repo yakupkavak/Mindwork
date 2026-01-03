@@ -13,123 +13,128 @@ struct WordCubeUI: View {
 
     var body: some View {
         ZStack {
+            // Arkaplan (Sabit kalır, scroll edilmez)
             Color(.systemBackground)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            // Klavye yönetimi ve kaydırma için GeometryReader + ScrollView yapısı
+            GeometryReader { geometry in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 24) {
 
-                // Top bar
-                VStack(spacing: 6) {
-                    Text("Word Cube")
-                        .font(.headline)
+                        // Top bar
+                        VStack(spacing: 6) {
+                            Text("Word Cube")
+                                .font(.headline)
 
-                    Text("Level: \(vm.level) words")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                            Text("Level: \(vm.level) words")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
 
-                    Text("Score: \(vm.score)")
-                        .font(.subheadline)
-                        .foregroundColor(.orange)
+                            Text("Score: \(vm.score)")
+                                .font(.subheadline)
+                                .foregroundColor(.orange)
 
-                    ProgressView(
-                        value: Double(vm.level - vm.minLevel + 1),
-                        total: Double(vm.maxLevel - vm.minLevel + 1)
-                    )
-                    .tint(.orange)
-                    .padding(.horizontal)
-
-                    Text(String(format: "%.2f", vm.elapsedTime))
-                        .font(.title3.monospacedDigit())
-                        .foregroundColor(.primary)
-                }
-                .padding(.top, 24)
-
-                // Question area
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.orange, Color(red: 1.0, green: 0.6, blue: 0.2)],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                            ProgressView(
+                                value: Double(vm.level - vm.minLevel + 1),
+                                total: Double(vm.maxLevel - vm.minLevel + 1)
                             )
-                        )
+                            .tint(.orange)
+                            .padding(.horizontal)
 
-                    VStack(spacing: 8) {
-                        Text(questionTitle)
-                            .font(.headline)
-                            .foregroundColor(.white)
+                            Text(String(format: "%.2f", vm.elapsedTime))
+                                .font(.title3.monospacedDigit())
+                                .foregroundColor(.primary)
+                        }
+                        .padding(.top, 24)
 
-                        // ✅ Subtitle rules updated exactly as you asked
-                        switch vmPhase {
-                        case .idle:
-                            Text("You will see \(vm.level) words one by one on the screen.")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                        // Question area
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.orange, Color(red: 1.0, green: 0.6, blue: 0.2)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
 
-                            Text("Try to memorize the words in the correct order.")
-                                .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                            VStack(spacing: 8) {
+                                Text(questionTitle)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
 
-                        case .showingWords:
-                            // Keep only "Watch the Words", remove subtitle
-                            EmptyView()
+                                switch vmPhase {
+                                case .idle:
+                                    Text("You will see \(vm.level) words one by one on the screen.")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
 
-                        case .recalling:
-                            Text("Type the words in the exact order you saw them.")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                                    Text("Try to memorize the words in the correct order.")
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(.white)
 
-                        case .result:
-                            Text(vm.feedbackMessage)
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                                case .showingWords:
+                                    EmptyView()
 
-                        case .gameOver:
-                            Text(vm.feedbackMessage)
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                                case .recalling:
+                                    Text("Type the words in the exact order you saw them.")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
+
+                                case .result:
+                                    Text(vm.feedbackMessage)
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
+
+                                case .gameOver:
+                                    Text(vm.feedbackMessage)
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
+                                }
+                            }
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        }
+                        .frame(height: 110)
+                        .padding(.horizontal)
+
+                        Spacer(minLength: 8)
+
+                        // Main content area
+                        Group {
+                            switch vmPhase {
+                            case .idle, .showingWords:
+                                showingWordsView
+                            case .recalling:
+                                // Recalling içinde zaten scrollview vardı, iç içe scroll olmasın diye buradakini düz Vstack yapıyoruz
+                                recallViewContent
+                            case .result:
+                                resultView
+                            case .gameOver:
+                                resultView
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        Spacer()
+
+                        // Bottom buttons
+                        if vmPhase == .result {
+                            resultButtons
+                                .padding(.horizontal)
+                                .padding(.bottom, 24)
+                        } else if vmPhase != .gameOver {
+                            mainButton
+                                .padding(.horizontal)
+                                .padding(.bottom, 24)
                         }
                     }
-                    .multilineTextAlignment(.center)
-                    .padding()
-                }
-                .frame(height: 110)
-                .padding(.horizontal)
-
-                Spacer(minLength: 8)
-
-                // Main content area (changes with phase)
-                Group {
-                    switch vmPhase {
-                    case .idle, .showingWords:
-                        showingWordsView
-                    case .recalling:
-                        recallView
-                    case .result:
-                        resultView
-                    case .gameOver:
-                        // ✅ Oyun ekranı arkada kalsın (popup üstte gelecek)
-                        resultView
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-
-                // Bottom buttons
-                if vmPhase == .result {
-                    resultButtons
-                        .padding(.horizontal)
-                        .padding(.bottom, 24)
-                } else if vmPhase != .gameOver {
-                    mainButton
-                        .padding(.horizontal)
-                        .padding(.bottom, 24)
+                    .frame(minHeight: geometry.size.height + 50)
                 }
             }
         }
-        // ✅ POPUP ARTIK GERÇEK OVERLAY (tam ekran üstüne biner)
+        // Popup Overlay
         .overlay {
             if vm.showStatsPopup {
                 statsPopupOverlay
@@ -143,19 +148,13 @@ struct WordCubeUI: View {
     private var vmPhase: WordCubeGameModel.Phase { vm.phase }
 
     // MARK: - Titles
-
     private var questionTitle: String {
         switch vmPhase {
-        case .showingWords:
-            return "Watch the Words"
-        case .recalling:
-            return "Write the Words"
-        case .result:
-            return "Round Result"
-        case .gameOver:
-            return "Game Over"
-        case .idle:
-            return "Get Ready"
+        case .showingWords: return "Watch the Words"
+        case .recalling: return "Write the Words"
+        case .result: return "Round Result"
+        case .gameOver: return "Game Over"
+        case .idle: return "Get Ready"
         }
     }
 
@@ -179,27 +178,27 @@ struct WordCubeUI: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var recallView: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                Text("Type the \(vm.level) words you saw, in the correct order.")
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+    // 🔥 DEĞİŞİKLİK: Recall view'ın içindeki ScrollView'ı kaldırdık,
+    // çünkü ana ekran zaten ScrollView oldu.
+    private var recallViewContent: some View {
+        VStack(spacing: 12) {
+            Text("Type the \(vm.level) words you saw, in the correct order.")
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                ForEach(0..<vm.userInputs.count, id: \.self) { index in
-                    HStack {
-                        Text("\(index + 1).")
-                            .frame(width: 24, alignment: .leading)
-                            .foregroundColor(.secondary)
+            ForEach(0..<vm.userInputs.count, id: \.self) { index in
+                HStack {
+                    Text("\(index + 1).")
+                        .frame(width: 24, alignment: .leading)
+                        .foregroundColor(.secondary)
 
-                        TextField("Word \(index + 1)", text: Binding(
-                            get: { vm.userInputs[index] },
-                            set: { vm.userInputs[index] = $0 }
-                        ))
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    }
+                    TextField("Word \(index + 1)", text: Binding(
+                        get: { vm.userInputs[index] },
+                        set: { vm.userInputs[index] = $0 }
+                    ))
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 }
             }
         }
@@ -226,18 +225,13 @@ struct WordCubeUI: View {
         .frame(maxWidth: .infinity)
     }
 
-    // ✅ POPUP OVERLAY (tam ekran)
+    // Popup Overlay
     private var statsPopupOverlay: some View {
         ZStack {
-            // arkaplan karartı
             Color.black.opacity(0.35)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    // İstersen tıklayınca kapatmayı istemiyorsun diye dokunmuyorum.
-                    // vm.showStatsPopup = false  (istersen açarız)
-                }
+                .onTapGesture { }
 
-            // popup kart
             VStack(spacing: 16) {
                 Text("İstatistikler")
                     .font(.title2.bold())
@@ -305,16 +299,11 @@ struct WordCubeUI: View {
 
     private var mainButtonTitle: String {
         switch vmPhase {
-        case .idle:
-            return "Start Round"
-        case .showingWords:
-            return "Showing Words..."
-        case .recalling:
-            return "Check Answers"
-        case .result:
-            return "Next Round"
-        case .gameOver:
-            return "Restart Game"
+        case .idle: return "Start Round"
+        case .showingWords: return "Showing Words..."
+        case .recalling: return "Check Answers"
+        case .result: return "Next Round"
+        case .gameOver: return "Restart Game"
         }
     }
 
