@@ -364,7 +364,6 @@ class FirestorageManager {
         if let phoneNumber = phoneNumber {
             updatedData[FireDatabase.USER_PHONE] = phoneNumber
         }
-        updatedData["fcmToken"] = "todo"
         
         try await userRef.updateData(updatedData)
     }
