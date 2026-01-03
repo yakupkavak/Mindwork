@@ -14,27 +14,8 @@ struct FeedUI: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            
-            DownSizedImageView(image: UIImage(named: "palmiye"),
-                               size: CGSize(width: 200, height: 200)) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200)
-            }.frame(maxWidth: .infinity, alignment: .topTrailing)
-                               .offset(x: 24, y: 20)
-                               .zIndex(0.9)
-            
-            DownSizedImageView(image: UIImage(named: "palmiye"),
-                               size: CGSize(width: 140, height: 140)) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 140)
-            }.frame(maxWidth: .infinity, alignment: .topLeading)
-                               .offset(x: 24, y: 60)
-                               .zIndex(0.9)
-            
+            Image("mainbackground").resizable().scaledToFill().zIndex(0.1).frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+
             ScrollView{
                 // Subjects bölümü
 //Memory
@@ -83,7 +64,14 @@ struct FeedUI: View {
                 
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.leading,16).padding(.top)
-                .background(Color.white).clipShape(RoundedTopLeftShape(radius: 70)).padding(.top,190)
+                .background(
+                        ZStack {
+                            Rectangle()
+                                .fill(.ultraThinMaterial.opacity(0.85))
+                            Color.blue.opacity(0.2)
+                        }
+                    )
+                .clipShape(RoundedTopLeftShape(radius: 70)).padding(.top,190)
                 .zIndex(1)
             /* Online
                 .customAlert(titleKey: QuestionStringKeys.question_select_title,
@@ -151,8 +139,8 @@ struct SubjectsView: View {
     
     var body: some View {
         VStack(alignment: .leading){
-            tvSubtitleFont(text: title, color: .blue)
-            tvBodyline(text: description, color: .gray).truncationMode(.head)
+            tvSubtitleFont(text: title, color: .brown300)
+            tvBodyline(text: description, color: Color.white).truncationMode(.head)
         }
     }
 }
