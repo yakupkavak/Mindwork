@@ -18,43 +18,55 @@ struct UserInfoUI: View {
     @ObservedObject var userManager: UserManager
 
     var body: some View {
-        VStack(spacing: 16){
-            
-            Button{
-                showPicker.toggle()
-            } label: {
-                KFImage.profile(urlString: viewModel.user.profileImageUrl, size: 150).overlay(alignment: .bottomTrailing) {
-                    btnAddIcon(iconName: "plus",width: 35) {
-                        showPicker.toggle()
+        ZStack {
+            ZStack {
+                Image("mainbackground")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .ignoresSafeArea()
+                
+                Rectangle()
+                    .fill(.ultraThinMaterial.opacity(0.85))
+                    .ignoresSafeArea()
+                
+                Color.blue.opacity(0.1)
+                    .ignoresSafeArea()
+            }
+            VStack(spacing: 8){
+                Button{
+                    showPicker.toggle()
+                } label: {
+                    KFImage.profile(urlString: viewModel.user.profileImageUrl, size: 150).overlay(alignment: .bottomTrailing) {
+                        btnAddIcon(iconName: "plus",width: 35) {
+                            showPicker.toggle()
+                        }
                     }
+                }.photosPicker(isPresented: $showPicker, selection: $viewModel.selectedPhoto,matching: .images)
+                tvBodyline(text: StringKey.yourInfo, color: .blue500).frame(maxWidth: .infinity, alignment: .leading).padding(.bottom)
+                
+                VStack(alignment: .leading){
+                    tvFootnote(text: StringKey.name, color: .black).padding(.leading)
+                    tfText(placeHolder: StringKey.name_placeholder, textInput: $viewModel.nameInput)
                 }
-            }.photosPicker(isPresented: $showPicker, selection: $viewModel.selectedPhoto,matching: .images)
-            
-            Spacer()
-            tvBodyline(text: StringKey.yourInfo, color: .blue500).frame(maxWidth: .infinity, alignment: .leading).padding(.bottom)
-            
-            VStack(alignment: .leading){
-                tvFootnote(text: StringKey.name, color: .black).padding(.leading)
-                tfText(placeHolder: StringKey.name_placeholder, textInput: $viewModel.nameInput)
-            }
-            VStack(alignment: .leading){
-                tvFootnote(text: StringKey.surname, color: .black).padding(.leading)
-                tfText(placeHolder: StringKey.surname_placeholder, textInput: $viewModel.surnameInput)
-            }
-            VStack(alignment: .leading){
-                tvFootnote(text: StringKey.mobile, color: .black).padding(.leading)
-                tfText(placeHolder: StringKey.mobile_placeholder, keyboard: .phonePad, textInput: $viewModel.mobileInput)
-            }
-            VStack(alignment: .leading){
-                tvFootnote(text: StringKey.email, color: .black).padding(.leading)
-                tfText(placeHolder: StringKey.email_placeholder, keyboard: .emailAddress, textInput: $viewModel.emailInput)
-            }
-            
-            btnTextGradientInfinity(action: {
-                viewModel.saveProfile()
-            }, text: StringKey.update).padding(.top)
-            Spacer()
-        }.padding()
+                VStack(alignment: .leading){
+                    tvFootnote(text: StringKey.surname, color: .black).padding(.leading)
+                    tfText(placeHolder: StringKey.surname_placeholder, textInput: $viewModel.surnameInput)
+                }
+                VStack(alignment: .leading){
+                    tvFootnote(text: StringKey.mobile, color: .black).padding(.leading)
+                    tfText(placeHolder: StringKey.mobile_placeholder, keyboard: .phonePad, textInput: $viewModel.mobileInput)
+                }
+                VStack(alignment: .leading){
+                    tvFootnote(text: StringKey.email, color: .black).padding(.leading)
+                    tfText(placeHolder: StringKey.email_placeholder, keyboard: .emailAddress, textInput: $viewModel.emailInput)
+                }
+                
+                btnTextGradientInfinity(action: {
+                    viewModel.saveProfile()
+                }, text: StringKey.update).padding(.top, 4).padding(.bottom, 32)
+            }.padding()//.padding(.top, 48)
+        }
             .onChange(of: viewModel.selectedPhoto) { _ in
                 viewModel.convertDataToImage()
             }
