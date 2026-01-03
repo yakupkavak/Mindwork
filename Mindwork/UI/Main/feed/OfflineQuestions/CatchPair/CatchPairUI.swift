@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct CatchPairUI: View {
     @StateObject var viewModel = CatchPairViewModel()
     @EnvironmentObject var router: RouterFeed
@@ -50,14 +49,22 @@ struct CatchPairUI: View {
                 .background(Color.clear)
                 .padding(.top, 32)
 
+            // ✅ Turuncu "Başlat" butonu KALDIRILDI (başka hiçbir şey değişmedi)
+
             VStack{
                 Spacer()
                 ColorAnswerButton(
                     title: viewModel.currentNumber,
                     color: viewModel.randomColor
-                ) { viewModel.checkQuestion(selectedNumber: 0) }
+                ) {
+                    if viewModel.waitingToStart {
+                        viewModel.startGame()
+                    } else {
+                        viewModel.checkQuestion(selectedNumber: 0)
+                    }
+                }
                 .offset(offsets[0])
-                .disabled(viewModel.answeredQuestion)
+                .disabled(viewModel.answeredQuestion && !viewModel.waitingToStart)
                 Spacer()
             }.frame(maxWidth: .infinity,maxHeight: .infinity).background(Color.gray.opacity(0.04)).cornerRadius(16)
             
@@ -90,12 +97,13 @@ struct CatchPairUI: View {
             accuracy: StatsKey.accuracy(percent: viewModel.percentageTruth),
             acceptText: StringKey.start_again,
             deniedText: StringKey.main_page,
-                      acceptFunc: {
-            viewModel.startAgain()
-         },
-                      deniedFunc: {
-            router.navigateBack()
-         })
+            acceptFunc: {
+                viewModel.startAgain()
+            },
+            deniedFunc: {
+                router.navigateBack()
+            }
+        )
     }
     
     private var keyboards: some View {
@@ -122,6 +130,7 @@ struct CatchPairUI: View {
             
         }
     }
+
     struct KeypadButton: View {
         let label: Int
         let action: () -> Void
@@ -134,6 +143,7 @@ struct CatchPairUI: View {
             }.tint(.primary)
         }
     }
+
     struct TextButton: View {
         let label: String
         let action: () -> Void
@@ -146,8 +156,6 @@ struct CatchPairUI: View {
             }.tint(.primary)
         }
     }
-        
-    
 
     // MARK: - Offset üretimi
     private func updateOffsets(animated: Bool) {
@@ -170,3 +178,4 @@ struct CatchPairUI: View {
 #Preview {
     CatchPairUI().environmentObject(RouterFeed())
 }
+

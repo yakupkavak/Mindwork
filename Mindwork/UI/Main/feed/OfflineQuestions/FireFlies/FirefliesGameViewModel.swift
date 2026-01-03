@@ -94,7 +94,7 @@ final class FirefliesGameViewModel: ObservableObject {
     }
     
     func nextRoundTapped() {
-        startNewRound()
+        startNewRound(autoStart: true)
     }
     
     func endGameTapped() {
@@ -114,7 +114,7 @@ final class FirefliesGameViewModel: ObservableObject {
     
     // MARK: - Game Flow
     
-    func startNewRound() {
+    func startNewRound(autoStart: Bool = false) {
         sequence = model.generateSequence(length: level, level: level)
         userSequence = []
         highlightedIndex = nil
@@ -123,6 +123,9 @@ final class FirefliesGameViewModel: ObservableObject {
         attemptsThisRound = 0
         attemptStartTime = nil
         phase = .idle
+        if autoStart {
+            startShowingSequence()
+        }
     }
     
     private func restartGame() {

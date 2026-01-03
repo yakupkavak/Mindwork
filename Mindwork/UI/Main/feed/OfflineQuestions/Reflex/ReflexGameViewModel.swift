@@ -10,6 +10,7 @@ final class ReflexGameViewModel: BaseViewModel {
     @Published var gameState: GameState = .ready
     @Published var message = ""
     @Published var gameOver = false
+    @Published var countdownText: String = "" // Geri sayım rakamı için
     
     @Published var correctCount = 0
     @Published var wrongCount = 0
@@ -24,7 +25,7 @@ final class ReflexGameViewModel: BaseViewModel {
     private let minDelay: Double = 0.45
     private let speedIncrement: Double = 0.02
     
-    enum GameState { case ready, running, gameOver }
+    enum GameState { case ready, countdown, running, gameOver }
     
     enum GameColor: CaseIterable, Equatable {
         case green, yellow, red
@@ -36,6 +37,7 @@ final class ReflexGameViewModel: BaseViewModel {
         }
     }
 
+    // MARK: - Game Control
     func startGame() {
         score = 0
         correctCount = 0
@@ -43,6 +45,39 @@ final class ReflexGameViewModel: BaseViewModel {
         totalResponseTime = 0
         gameOver = false
         isProcessingTap = false
+        
+        setNewTargetColor()
+        
+        var startColor: GameColor
+            repeat {
+                startColor = GameColor.allCases.randomElement()!
+            } while startColor == targetColor
+            currentColor = startColor
+            
+            startInitialCountdown()
+    }
+
+    private func startInitialCountdown() {
+        gameState = .countdown
+        var timeLeft = 3
+        countdownText = "\(timeLeft)"
+        
+        // 3 saniyelik başlangıç geri sayımı
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self = self else { return }
+            timeLeft -= 1
+            
+            if timeLeft > 0 {
+                self.countdownText = "\(timeLeft)"
+            } else {
+                timer.invalidate()
+                self.runGameLogic()
+            }
+        }
+    }
+
+    private func runGameLogic() {
         gameState = .running
         setNewTargetColor()
         nextColor()
@@ -53,6 +88,7 @@ final class ReflexGameViewModel: BaseViewModel {
         message = "Hedef: \(targetColor.name)"
     }
 
+    // MARK: - Tap Handling
     func handleTap() {
         guard gameState == .running, !isProcessingTap else { return }
         
@@ -64,17 +100,19 @@ final class ReflexGameViewModel: BaseViewModel {
             totalResponseTime += reactionTime
             correctCount += 1
             
+            // Hız bonusu hesaplama
             let speedBonus = max(1, Int((initialDelay - reactionTime) * 15))
             score += speedBonus
             
             isProcessingTap = false
             nextColor()
         } else {
-            wrongCount = 1 // Firebase istatistiği için
+            wrongCount = 1 // İstatistik için
             stopGame(reason: "Yanlış renge bastın!")
         }
     }
 
+    // MARK: - Color Logic
     private func nextColor() {
         timer?.invalidate()
         if gameState != .running { return }
@@ -88,6 +126,7 @@ final class ReflexGameViewModel: BaseViewModel {
         lastColorChangeTime = Date()
         isProcessingTap = false
         
+        // Seviye ilerledikçe hızı artır
         let dynamicDelay = initialDelay - (Double(correctCount) * speedIncrement)
         let currentDelay = max(minDelay, dynamicDelay)
         
@@ -96,7 +135,7 @@ final class ReflexGameViewModel: BaseViewModel {
             
             if !self.isProcessingTap {
                 if self.currentColor == self.targetColor {
-                    self.wrongCount = 1 // Firebase istatistiği için
+                    self.wrongCount = 1
                     self.stopGame(reason: "Hedefi kaçırdın!")
                 } else {
                     self.nextColor()
@@ -105,6 +144,7 @@ final class ReflexGameViewModel: BaseViewModel {
         }
     }
 
+    // MARK: - Game End
     func stopGame(reason: String) {
         gameState = .gameOver
         timer?.invalidate()
@@ -113,9 +153,16 @@ final class ReflexGameViewModel: BaseViewModel {
         averageResponseTime = correctCount > 0 ? totalResponseTime / Double(correctCount) : 0
         message = reason
         
-        // Firebase
+        // Firebase Veri Kaydı
+        saveToFirebase()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.gameOver = true
+        }
+    }
+    
+    private func saveToFirebase() {
         getDataCall {
-            // Başarı oranı (Doğru / Toplam Deneme)
             let total = Double(self.correctCount + self.wrongCount)
             let successRate = total > 0 ? Double(self.correctCount) / total : 0.0
             
@@ -128,16 +175,10 @@ final class ReflexGameViewModel: BaseViewModel {
                 )
             )
         } onSuccess: { _ in
-            print("Reflex game saved successfully")
+            print("Reflex game saved")
         } onLoading: {
-            print("Reflex game saving...")
         } onError: { error in
-            print("Reflex game save error: \(error?.localizedDescription ?? "")")
-        }
-        // Firebase
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.gameOver = true
+            print("Reflex save error: \(error?.localizedDescription ?? "")")
         }
     }
 }

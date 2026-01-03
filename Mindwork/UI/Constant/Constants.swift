@@ -343,6 +343,8 @@ struct Constants {
         static let four_before = LocalizedStringKey("four_before")
         static let showing_numbers = LocalizedStringKey("showing_numbers")
         static let start_remember = LocalizedStringKey("start_remember")
+        static let catchpair_intro = LocalizedStringKey("catchpair_intro")
+        static let start = LocalizedStringKey("start")
         static let loading = LocalizedStringKey("loading")
 
     }

@@ -1,11 +1,3 @@
-//
-//  TimingGameUI.swift
-//  Mindwork
-//
-//  Created by Cemre Bayer on 28.12.2025.
-//
-
-import SwiftUICore
 import SwiftUI
 
 struct TimingGameUI: View {
@@ -13,90 +5,136 @@ struct TimingGameUI: View {
     @EnvironmentObject var router: RouterFeed
 
     var body: some View {
-        VStack {
-            // Header
-            HStack {
-                btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
-                    router.navigateBack()
+        ZStack {
+            VStack(spacing: 0) {
+                // MARK: Header
+                HStack {
+                    btnSystemIconTransparent(iconSystemName: Icons.left_direction, color: .black) {
+                        router.navigateBack()
+                    }
+                    Spacer()
+                    tvBodylineString(
+                        text: "Seviye \(viewModel.level)",
+                        color: .black
+                    )
+                    Spacer()
+                    btnSystemIconTransparent(iconSystemName: "ellipsis.circle", color: .black) { }
                 }
-                Spacer()
+                .padding(.horizontal)
+                .padding(.top, 10)
+                // Progress Bar
+                ProgressView(value: viewModel.timeLeft, total: 5.0)
+                    .padding(.top)
+                    .tint(.orange300)
+                    .scaleEffect(x: 1, y: 2, anchor: .center)
+                    .padding(.horizontal, 20)
+
+                // Timer & Score
                 tvBodylineString(
-                    text: String(format: NSLocalizedString("question_number", comment: ""), viewModel.questionNumber),
+                    text: String(format: "%.2f", viewModel.timeLeft),
                     color: .black
                 )
-                Spacer()
-                btnSystemIconTransparent(iconSystemName: "info.circle", color: .black) { }
-            }
-
-            // Progress Bar (Pattern Game ile aynı)
-            ProgressView(value: viewModel.questionProgress)
                 .padding(.top)
-                .tint(.blue)
-                .scaleEffect(x: 1, y: 2, anchor: .center)
-
-            Spacer()
-
-            // Oyun Alanı
-            VStack(spacing: 50) {
-                Text("Tam merkezde durdur!")
-                    .font(.headline)
-                    .foregroundColor(.gray)
-
-                ZStack {
-                    // Ana Ray
-                    Capsule()
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(height: 12)
-                    
-                    // Hedef Alanı (Pattern Game kutuları gibi belirgin)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.blue.opacity(0.2))
-                        .frame(width: 40, height: 60)
-                    
-                    // Hedef Çizgisi
-                    Rectangle()
-                        .fill(Color.blue)
-                        .frame(width: 3, height: 40)
-
-                    // Hareket Eden Obje
-                    GeometryReader { geo in
-                        Circle()
-                            .fill(viewModel.gameResult?.color ?? .blue)
-                            .frame(width: 35, height: 35)
-                            .shadow(color: .black.opacity(0.2), radius: 5)
-                            .offset(x: (geo.size.width - 35) * viewModel.barPosition)
-                    }
-                    .frame(height: 35)
-                }
-                .padding(.horizontal, 30)
-
-                // Feedback Metni
+                
                 if let result = viewModel.gameResult {
-                    Text(result.rawValue)
-                        .font(.system(size: 40, weight: .black, design: .rounded))
-                        .foregroundColor(result.color)
-                        .transition(.scale)
+                    tvBodyline(text: LocalizedStringKey(result.rawValue), color: result.color)
+                        .padding(.top, 4)
+                } else {
+                    Text("SKOR: \(viewModel.score)")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .padding(.top, 4)
+                }
+
+                Spacer()
+
+                // MARK: Game Area
+                // MARK: Game Area
+                ZStack {
+                    // Arka Plan Kutusu
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.orange.opacity(0.1))
+                        .frame(height: 160)
+                        .padding(.horizontal, 20)
+
+                    GeometryReader { geo in
+                        let containerWidth = geo.size.width - 40
+                        let ballSize: CGFloat = 40
+                        let lineSize: CGFloat = 6
+                        
+                        // ÖNEMLİ: İkisini de aynı track üzerinde hesaplıyoruz
+                        // Böylece 0.5 değeri ikisi için de tam orta nokta olur.
+                        let playableTrack = containerWidth - ballSize
+                        
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                            .fill(Color.black.opacity(0.08))
+                            .frame(height: 4)                // İnce bir hat
+                            .frame(maxWidth: .infinity)      // Tüm alanı kaplasın
+
+                            Rectangle()
+                                .fill(Color.orange)
+                                .frame(width: lineSize, height: 70)
+                                .offset(x: playableTrack * viewModel.targetPosition + (ballSize/2 - lineSize/2))
+                            
+                            // Hareket Eden Top
+                            Circle()
+                                .fill(viewModel.gameResult == .miss ? .red : .orange)
+                                .frame(width: ballSize, height: ballSize)
+                                .offset(x: playableTrack * viewModel.barPosition)
+                        }
+                        .padding(.horizontal, 20)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    }
+                    .frame(height: 70)
+                }
+                Spacer()
+
+                // MARK: Control Button
+                VStack(spacing: 12) {
+                    btnTextGradientInfinity(
+                        action: {
+                            viewModel.stopAndCheck()
+                        },
+                        text: viewModel.answeredQuestion ? "BEKLEYİN" : "DURDUR"
+                    )
+                    .disabled(!viewModel.isGameStarted || viewModel.answeredQuestion)
+                    .opacity((!viewModel.isGameStarted || viewModel.answeredQuestion) ? 0.6 : 1.0)
+                    .padding(.horizontal, 64)
+                }
+                .padding(.bottom, 32)
+            }
+            .blur(radius: viewModel.isGameStarted ? 0 : 10)
+
+            // MARK: Start Overlay
+            if !viewModel.isGameStarted && !viewModel.gameOver {
+                ZStack {
+                    Color.white.opacity(0.92).ignoresSafeArea()
+                    
+                    VStack(spacing: 25) {
+                        Image(systemName: "timer")
+                            .font(.system(size: 70))
+                            .foregroundColor(.orange)
+                        
+                        tvBodylineString(text: "NASIL OYNANIR?", color: .black)
+                        
+                        Text("Top turuncu çizginin tam üzerine geldiğinde DURDUR butonuna bas.\n\nIskalarsan veya süren biterse oyun biter!")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                        
+                        btnTextGradientInfinity(
+                            action: {
+                                withAnimation { viewModel.startGame() }
+                            },
+                            text: "OYUNU BAŞLAT"
+                        )
+                        .padding(.horizontal, 64)
+                    }
                 }
             }
-
-            Spacer()
-
-            // Kontrol Butonu
-            Button(action: { viewModel.stopAndCheck() }) {
-                Text(viewModel.answeredQuestion ? "BEKLEYİN..." : "ŞİMDİ!")
-                    .font(.title3.bold())
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(viewModel.answeredQuestion ? Color.gray : Color.blue)
-                    .cornerRadius(20)
-                    .shadow(radius: 5)
-            }
-            .disabled(viewModel.answeredQuestion)
-            .padding(.horizontal, 40)
-            .padding(.bottom, 50)
         }
-        .padding()
         .navigationBarHidden(true)
         .customAnswerAlert(
             isPresented: $viewModel.gameOver,
@@ -107,12 +145,14 @@ struct TimingGameUI: View {
             accuracy: StatsKey.accuracy(percent: viewModel.percentageTruth),
             acceptText: StringKey.start_again,
             deniedText: StringKey.main_page,
-            acceptFunc: { viewModel.resetGame() },
+            acceptFunc: {
+                viewModel.resetGameValues()
+                viewModel.startGame()
+            },
             deniedFunc: { router.navigateBack() }
         )
     }
 }
-
 #Preview {
     TimingGameUI().environmentObject(RouterFeed())
 }

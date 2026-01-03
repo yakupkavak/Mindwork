@@ -315,11 +315,9 @@ struct FirefliesUI: View {
                 
                 VStack(spacing: 12) {
                     Button {
-                        // Eğer router ile ana ekrana dönmek istiyorsan burayı kendi RouterFeed fonksiyonuna bağla:
-                        // router.goHome()
-                        
+                       
                         showStatsPopup = false
-                        vm.restartFromPopup()
+                        router.navigateToRoot()
                     } label: {
                         Text("Ana ekran")
                             .font(.headline)
